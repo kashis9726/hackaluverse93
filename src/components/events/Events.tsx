@@ -102,7 +102,7 @@ const Events: React.FC = () => {
   const bySearch = (e: any) =>
     searchQuery
       ? e.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        e.organizer.name.toLowerCase().includes(searchQuery.toLowerCase())
+        (e.organizer?.name || '').toLowerCase().includes(searchQuery.toLowerCase())
       : true;
 
   const upcomingEvents = events
@@ -302,7 +302,7 @@ const Events: React.FC = () => {
                     </div>
                     <div>
                       <h3 className="text-lg font-semibold text-gray-900 mb-1">{event.title}</h3>
-                      <p className="text-gray-600 text-sm">Organized by {event.organizer.name}</p>
+                      <p className="text-gray-600 text-sm">Organized by {event.organizer?.name || 'Unknown'}</p>
                     </div>
                   </div>
                   <div className={`flex items-center space-x-1 px-3 py-1 rounded-full text-sm font-medium ${getEventTypeColor(event.type)}`}>
@@ -402,7 +402,7 @@ const Events: React.FC = () => {
                     </div>
                     <div>
                       <h3 className="text-lg font-semibold text-gray-900 mb-1">{event.title}</h3>
-                      <p className="text-gray-600 text-sm">by {event.organizer.name}</p>
+                      <p className="text-gray-600 text-sm">by {event.organizer?.name || 'Unknown'}</p>
                     </div>
                   </div>
                   

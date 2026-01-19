@@ -58,6 +58,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, setCurrentPage }) => {
       dashboard: '/dashboard',
       alumni: '/alumni',
       opportunities: '/internships',
+      mentorship: '/mentorship',
       events: '/events',
       startups: '/startups',
       qa: '/qa',
@@ -78,7 +79,8 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, setCurrentPage }) => {
       case 'student':
         return [
           { id: 'dashboard', label: 'Student Dashboard', icon: Home },
-          { id: 'alumni', label: 'Find Mentors', icon: Users },
+          { id: 'alumni', label: 'Alumni Directory', icon: Users },
+          { id: 'mentorship', label: 'Find Mentors', icon: UserCheck },
           { id: 'opportunities', label: 'Opportunities', icon: Briefcase },
           { id: 'events', label: 'Events', icon: Calendar },
           { id: 'startups', label: 'Startup Ideas', icon: Lightbulb },
@@ -92,11 +94,12 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, setCurrentPage }) => {
           { id: 'dashboard', label: 'Alumni Dashboard', icon: Home },
           { id: 'qa', label: 'Q&A Board', icon: MessageCircle },
           { id: 'alumni', label: 'Alumni Directory', icon: Users },
+          { id: 'mentorship', label: 'Mentorship', icon: UserCheck },
           { id: 'blogs', label: 'Blogs', icon: BookOpen },
           { id: 'startups', label: 'Startup Hub', icon: Lightbulb },
           { id: 'opportunities', label: 'Opportunities', icon: Briefcase },
           { id: 'events', label: 'Alumni Events', icon: Calendar },
-          { id: 'reverse-pitching', label: 'Mentor Students', icon: UserCheck },
+          { id: 'reverse-pitching', label: 'Mentor Students', icon: RefreshCw },
         ];
 
       case 'admin':
@@ -121,13 +124,14 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, setCurrentPage }) => {
 
   return (
     <div className="w-64 bg-gradient-to-b from-purple-50 to-white border-r border-purple-200 flex flex-col h-screen sticky top-0">
-      {/* Logo & User Info */}
+      {/* Logo & Brand */}
       <div className="p-6 border-b border-purple-200">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 mb-3 opacity-60 hover:opacity-90 transition-opacity duration-200">
           <div className="w-10 h-10 bg-gradient-to-br from-purple-600 to-indigo-600 rounded-lg flex items-center justify-center">
             <span className="text-white font-bold text-lg">A</span>
           </div>
           <div>
+            <div className="text-sm font-bold text-purple-700">AluVerse</div>
             <div className="text-xs text-gray-600 capitalize font-medium">{user?.role}</div>
           </div>
         </div>
@@ -144,8 +148,8 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, setCurrentPage }) => {
                 <button
                   onClick={() => go(item.id)}
                   className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all font-medium ${isActive
-                      ? 'bg-purple-600 text-white shadow-md'
-                      : 'text-gray-700 hover:bg-purple-100'
+                    ? 'bg-purple-600 text-white shadow-md'
+                    : 'text-gray-700 hover:bg-purple-100'
                     }`}
                 >
                   <Icon className="h-5 w-5 flex-shrink-0" />
@@ -162,8 +166,8 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, setCurrentPage }) => {
         <button
           onClick={() => go('profile')}
           className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all font-medium ${resolvedCurrentPage === 'profile'
-              ? 'bg-purple-600 text-white shadow-md'
-              : 'text-gray-700 hover:bg-purple-100'
+            ? 'bg-purple-600 text-white shadow-md'
+            : 'text-gray-700 hover:bg-purple-100'
             }`}
         >
           <User className="h-5 w-5 flex-shrink-0" />

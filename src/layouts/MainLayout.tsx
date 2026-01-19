@@ -70,7 +70,7 @@ const MainLayout: React.FC = () => {
             </div>
 
             <main className="flex-1 overflow-auto">
-              <div className="mx-auto w-full max-w-6xl p-6">
+              <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
                 <Outlet />
               </div>
             </main>

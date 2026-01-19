@@ -183,12 +183,12 @@ const ReversePitching: React.FC = () => {
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-start space-x-4">
                 <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-full flex items-center justify-center text-white font-medium">
-                  {pitch.author.name.charAt(0).toUpperCase()}
+                  {(pitch.author?.name || 'U').charAt(0).toUpperCase()}
                 </div>
                 <div>
                   <h3 className="text-xl font-bold text-gray-900 mb-1">{pitch.title}</h3>
                   <p className="text-gray-600 text-sm">
-                    Posted by {pitch.author.name} • {pitch.author.company}
+                    Posted by {pitch.author?.name || 'Unknown'} • {pitch.author?.company || 'N/A'}
                   </p>
                   <p className="text-gray-500 text-xs">
                     {new Date(pitch.createdAt).toLocaleDateString()}

@@ -66,7 +66,7 @@ const Feed: React.FC = () => {
     const matchesType = filterType === 'all' ? true : p.type === filterType;
     const matchesSearch = searchQuery
       ? p.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.author.name.toLowerCase().includes(searchQuery.toLowerCase())
+        (p.author?.name || '').toLowerCase().includes(searchQuery.toLowerCase())
       : true;
     return matchesType && matchesSearch;
   });
@@ -179,12 +179,12 @@ const Feed: React.FC = () => {
           <div key={post.id} className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
             <div className="flex items-start space-x-4">
               <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-medium">
-                {post.author.name.charAt(0).toUpperCase()}
+                {(post.author?.name || 'U').charAt(0).toUpperCase()}
               </div>
               
               <div className="flex-1">
                 <div className="flex items-center space-x-2 mb-2">
-                  <h3 className="font-semibold text-gray-900">{post.author.name}</h3>
+                  <h3 className="font-semibold text-gray-900">{post.author?.name || 'Unknown'}</h3>
                   <span className="text-gray-500 text-sm">•</span>
                   <span className="text-gray-500 text-sm">
                     {new Date(post.createdAt).toLocaleDateString()}

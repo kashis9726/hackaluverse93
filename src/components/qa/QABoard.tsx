@@ -123,17 +123,17 @@ const QABoard: React.FC = () => {
     .slice(0, 8);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 w-full">
       {/* Hero / Title */}
-      <div className="sticky top-14 z-20 bg-white/90 backdrop-blur-sm rounded-xl p-4 shadow-sm border border-emerald-100/50">
+      <div className="bg-white/90 backdrop-blur-sm rounded-xl p-5 shadow-sm border border-emerald-100/50">
         <div className="flex items-center justify-between gap-4">
           <div className="flex-1 min-w-0">
-            <h1 className="text-lg font-bold text-gray-900 tracking-tight">Q&A Community</h1>
+            <h1 className="text-2xl font-extrabold text-gray-900 tracking-tight">Q&A Community</h1>
           </div>
           {user && (
             <button
               onClick={() => setShowCreateQuestion(true)}
-              className="px-3 py-1.5 text-sm rounded-lg text-white shadow-sm hover:opacity-95 transition bg-gradient-to-r from-emerald-500 to-emerald-600 whitespace-nowrap"
+              className="px-4 py-2 text-sm font-semibold rounded-lg text-white shadow-sm hover:opacity-95 transition bg-gradient-to-r from-emerald-500 to-emerald-600 whitespace-nowrap"
             >
               Ask
             </button>
@@ -166,32 +166,32 @@ const QABoard: React.FC = () => {
       </div>
 
       {/* Search and Sort - Compact */}
-      <div className="bg-white/80 backdrop-blur-sm rounded-lg p-3 shadow-sm border border-emerald-100/50 sticky top-32 z-10">
-        <div className="flex items-center gap-2">
-          <div className="flex-1 relative">
-            <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
+      <div className="bg-white/80 backdrop-blur-sm rounded-lg p-4 shadow-sm border border-emerald-100/50">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+          <div className="flex-1 w-full relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
             <input
               type="text"
-              placeholder="Search..."
+              placeholder="Search questions, tags..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-8 pr-3 py-1.5 text-sm border border-gray-300 rounded-md focus:ring-1.5 focus:ring-emerald-500 focus:border-transparent"
+              className="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
             />
           </div>
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value as any)}
-            className="px-2.5 py-1.5 text-sm border border-gray-300 rounded-md focus:ring-1.5 focus:ring-emerald-500 focus:border-transparent"
+            className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent whitespace-nowrap"
           >
             <option value="latest">Latest</option>
-            <option value="answers">Answers</option>
-            <option value="upvotes">Upvotes</option>
+            <option value="answers">Most Answers</option>
+            <option value="upvotes">Trending</option>
           </select>
         </div>
 
         {/* Popular Tags */}
         {popularTags.length > 0 && (
-          <div className="mt-2 flex flex-wrap gap-1.5 items-center">
+          <div className="mt-3 flex flex-wrap gap-2 items-center">
             {popularTags.map((tag, index) => {
               const active = selectedTags.includes(tag);
               return (
@@ -202,7 +202,7 @@ const QABoard: React.FC = () => {
                       active ? prev.filter(t => t !== tag) : [...prev, tag]
                     )
                   }
-                  className={`px-2 py-0.5 text-xs font-medium rounded-full transition-colors ${active ? 'bg-emerald-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  className={`px-2.5 py-1 text-xs font-medium rounded-full transition-colors ${active ? 'bg-emerald-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                     }`}
                 >
                   #{tag}
@@ -212,9 +212,9 @@ const QABoard: React.FC = () => {
             {selectedTags.length > 0 && (
               <button
                 onClick={() => setSelectedTags([])}
-                className="px-2 py-0.5 text-xs font-medium rounded-full bg-gray-50 text-gray-600 hover:bg-gray-100"
+                className="px-2.5 py-1 text-xs font-medium rounded-full bg-red-50 text-red-600 hover:bg-red-100"
               >
-                Clear
+                Clear filters
               </button>
             )}
           </div>
@@ -303,7 +303,7 @@ const QABoard: React.FC = () => {
                   <div className="flex items-start justify-between mb-2">
                     <div>
                       <h3 className="text-xl font-semibold text-gray-900">{q.title}</h3>
-                      <div className="text-sm text-gray-600">Asked by {q.author.name} • {new Date(q.createdAt).toLocaleString()}</div>
+                      <div className="text-sm text-gray-600">Asked by {q.author?.name || 'Unknown'} • {new Date(q.createdAt).toLocaleString()}</div>
                     </div>
                     <button aria-label="Close" onClick={() => { setActiveQuestionId(null); setNewAnswer(''); }} className="p-2 rounded-lg hover:bg-gray-100">
                       <X className="h-5 w-5 text-gray-500" />
@@ -326,7 +326,7 @@ const QABoard: React.FC = () => {
                     )}
                     {q.answers.map((ans, idx) => (
                       <div key={idx} className="p-3 rounded-lg border border-gray-200">
-                        <div className="text-sm text-gray-600 mb-1">By {ans.author.name} • {new Date(ans.createdAt).toLocaleString()}</div>
+                        <div className="text-sm text-gray-600 mb-1">By {ans.author?.name || 'Unknown'} • {new Date(ans.createdAt).toLocaleString()}</div>
                         <div className="text-gray-800 whitespace-pre-line">{ans.content}</div>
                       </div>
                     ))}
@@ -400,7 +400,7 @@ const QABoard: React.FC = () => {
           <div key={question.id} className="bg-white/90 backdrop-blur rounded-2xl p-6 shadow-elev-1 border border-white/50 hover:shadow-elev-2 transition">
             <div className="flex items-start space-x-4">
               <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-medium">
-                {question.author.name.charAt(0).toUpperCase()}
+                {(question.author?.name || 'U').charAt(0).toUpperCase()}
               </div>
 
               <div className="flex-1 min-w-0">
@@ -409,7 +409,7 @@ const QABoard: React.FC = () => {
 
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-4 text-sm text-gray-600">
-                    <span>Asked by {question.author.name}</span>
+                    <span>Asked by {question.author?.name || 'Unknown'}</span>
                     <span>•</span>
                     <div className="flex items-center space-x-1">
                       <Clock className="h-4 w-4" />

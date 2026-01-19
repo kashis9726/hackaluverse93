@@ -16,6 +16,7 @@ import internshipsRoutes from './routes/internships';
 import startupsRoutes from './routes/startups';
 import challengesRoutes from './routes/challenges';
 import qaRoutes from './routes/qa';
+import activityRoutes from './routes/activity';
 
 import { log, logError } from './utils';
 
@@ -39,6 +40,7 @@ app.use('/api/internships', internshipsRoutes);
 app.use('/api/startups', startupsRoutes);
 app.use('/api/challenges', challengesRoutes);
 app.use('/api/qa', qaRoutes);
+app.use('/api/activity', activityRoutes);
 
 // 404 handler
 app.use((_req, res) => {

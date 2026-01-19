@@ -13,6 +13,7 @@ import Event from '../models/Event';
 import Challenge from '../models/Challenge';
 import Internship from '../models/Internship';
 import Startup from '../models/Startup';
+import Activity from '../models/Activity';
 import { hashPassword } from '../utils/password';
 import { generateToken } from '../utils/token';
 import { STUDENT_SEED_DATA, ALUMNI_SEED_DATA } from './seedData';
@@ -39,9 +40,10 @@ async function seedDatabase(): Promise<void> {
     await mongoose.connect(mongoUri);
     log('[SEED]', '✓ Connected to MongoDB');
 
-    // Clear existing users
+    // Clear existing data
     await User.deleteMany({});
-    log('[SEED]', '✓ Cleared existing users');
+    await Activity.deleteMany({});
+    log('[SEED]', '✓ Cleared existing users and activities');
 
     // Create user map for reference
     const userMap: { [key: string]: string } = {};
@@ -97,19 +99,31 @@ async function seedDatabase(): Promise<void> {
     // Seed blogs
     log('[SEED]', '\n📝 Seeding Blogs...');
     for (const blog of BLOGS_SEED_DATA) {
-      await Blog.create({
-        title: blog.title,
-        slug: blog.slug,
+      const blogKeyword = `${blog.title} ${blog.category}`;
+      const blogImage = `https://images.unsplash.com/photo-${Math.floor(Math.random() * 1000000)}?w=1200&h=600&fit=crop`;
+      const authorId = userMap['Rahul Desai'] || userMap['Divya Patel'] || userMap['Vikram Sharma'] || userMap['Anjali Gupta'];
+      const blogDoc = await Blog.create({
+        authorId,
         content: blog.content,
-        excerpt: blog.excerpt,
-        author: userMap['Rahul Desai'] || userMap['Divya Patel'] || userMap['Vikram Sharma'] || userMap['Anjali Gupta'],
-        tags: blog.tags,
+        image: blogImage,
         category: blog.category,
-        views: blog.views,
-        likes: blog.likes,
-        published_at: blog.published_at,
+        tags: blog.tags,
+        type: 'post',
         createdAt: blog.published_at,
       });
+
+      // Log activity
+      await Activity.create({
+        userId: authorId,
+        type: 'blog_created',
+        title: `Published blog: "${blog.title}"`,
+        description: blog.content.substring(0, 100),
+        relatedId: blogDoc._id,
+        relatedType: 'Blog',
+        visibility: 'public',
+        createdAt: blog.published_at,
+      });
+
       log('[SEED]', `✓ Created blog: ${blog.title}`);
     }
 

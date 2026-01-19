@@ -77,8 +77,18 @@ export class AuthService {
       await User.findOne({ email, role }) : 
       await User.findOne({ email });
 
-    if (!user) throw new Error(ERROR_MESSAGES.INVALID_CREDENTIALS);
-    if (!user.passwordHash || !verifyPassword(password, user.passwordHash)) {
+    if (!user) {
+      log('[AUTH] login', `User not found: ${email}`);
+      throw new Error(ERROR_MESSAGES.INVALID_CREDENTIALS);
+    }
+
+    if (!user.passwordHash) {
+      log('[AUTH] login', `User has no password hash: ${email}`);
+      throw new Error(ERROR_MESSAGES.INVALID_CREDENTIALS);
+    }
+
+    if (!verifyPassword(password, user.passwordHash)) {
+      log('[AUTH] login', `Password mismatch for user: ${email}`);
       throw new Error(ERROR_MESSAGES.INVALID_CREDENTIALS);
     }
     if (user.role === 'admin') {

@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
+import { BrowserRouter, Navigate, Route, Routes, useLocation, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import PublicLayout from '../layouts/PublicLayout';
 import MainLayout from '../layouts/MainLayout';
@@ -13,8 +13,10 @@ import Opportunities from './opportunities/Opportunities';
 import Blogs from './blogs/Blogs';
 import StartupHub from './startup/StartupHub';
 import ReversePitching from './reverse-pitching/ReversePitching';
+import FindMentors from './mentorship/FindMentors';
 import QABoard from './qa/QABoard';
 import AlumniDirectory from './people/AlumniDirectory';
+import AlumniProfile from './people/AlumniProfile';
 import Profile from './profile/Profile';
 import ProfileSetup from './profile/ProfileSetup';
 import AdminDashboard from './admin/AdminDashboard';
@@ -22,6 +24,18 @@ import UserManagement from './admin/UserManagement';
 import Analytics from './admin/Analytics';
 import ContentModeration from './admin/ContentModeration';
 import SystemSettings from './admin/SystemSettings';
+
+// Wrapper to handle admin-login mode in auth query
+const AuthPageWithAdminRedirect: React.FC = () => {
+  const [searchParams] = useSearchParams();
+  const mode = searchParams.get('mode');
+
+  if (mode === 'admin-login') {
+    return <AdminLoginPage />;
+  }
+
+  return <AuthPage />;
+};
 
 const AppRouter: React.FC = () => {
   const { user } = useAuth();
@@ -106,7 +120,7 @@ const AppRouter: React.FC = () => {
             user ? (
               <Navigate to={user.profileCompleted || user.role === 'admin' ? '/dashboard' : '/profile-setup'} replace />
             ) : (
-              <AuthPage />
+              <AuthPageWithAdminRedirect />
             )
           }
         />
@@ -130,6 +144,7 @@ const AppRouter: React.FC = () => {
           <Route path="/qa" element={<QABoard />} />
           <Route path="/challenges" element={<ReversePitching />} />
           <Route path="/alumni" element={<AlumniDirectory />} />
+          <Route path="/mentorship" element={<FindMentors />} />
           <Route path="/profile" element={<Profile />} />
 
           <Route path="/admin/users" element={<RequireAdmin><UserManagement /></RequireAdmin>} />

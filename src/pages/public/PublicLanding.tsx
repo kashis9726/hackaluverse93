@@ -25,10 +25,11 @@ const PublicLanding: React.FC = () => {
               </div>
 
               <h1 className="mt-5 text-5xl sm:text-6xl font-extrabold tracking-tight text-gray-900">
-                Your alumni network,
-                <span className="block text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-emerald-800">
-                  actually useful.
+                <span className="block animate-fade-in-up">Unlock your future with</span>
+                <span className="block text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 via-green-400 to-emerald-800 animate-gradient-x animate-bounce font-extrabold">
+                  Alumni Power.
                 </span>
+                <span className="block text-lg font-semibold text-emerald-700 mt-2 animate-fade-in animate-delay-500">Mentorship, jobs, events & real connections await!</span>
               </h1>
 
               <p className="mt-5 text-base sm:text-lg text-gray-600 max-w-xl">

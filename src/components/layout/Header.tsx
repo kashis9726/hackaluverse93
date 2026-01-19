@@ -17,15 +17,15 @@ const Header: React.FC<HeaderProps> = ({ onChatToggle }) => {
   const messageCount = 2;
 
   return (
-    <header className="sticky top-0 z-40 w-full bg-white border-b border-emerald-200/40 shadow-sm">
+    <header className="sticky top-0 z-40 w-full bg-white/60 backdrop-blur-md border-b border-emerald-200/20 shadow-none">
       <div className="h-14 px-6 flex items-center justify-between gap-4">
 
-        {/* Left - Brand Logo (Minimal) */}
-        <div className="flex items-center gap-2 min-w-fit">
+        {/* Left - Brand Logo (Hidden on desktop since it's in sidebar) */}
+        <div className="flex items-center gap-2 min-w-fit lg:hidden">
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center">
             <span className="text-white font-bold text-lg">A</span>
           </div>
-          <span className="text-emerald-700 font-bold text-sm hidden sm:block tracking-wide">AluVerse</span>
+          <span className="text-emerald-700 font-bold text-sm tracking-wide">AluVerse</span>
         </div>
 
         {/* Center - Spacer */}

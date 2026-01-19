@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useApp } from '../../contexts/AppContext';
+import { useNavigate } from 'react-router-dom';
 import { Search, MessageSquare, UserCircle2 } from 'lucide-react';
 
 const Blogs: React.FC = () => {
@@ -82,39 +83,35 @@ const Blogs: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="sticky top-16 z-20 bg-white/70 backdrop-blur rounded-2xl px-4 py-3 shadow-elev-1 border border-white/50">
-        <div className="flex flex-col gap-3">
+      <div className="bg-white/80 backdrop-blur rounded-2xl px-6 py-4 shadow-sm border border-white/50 mb-6">
+        <div className="flex flex-col gap-4">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <h1 className="text-lg font-extrabold text-gray-900 leading-tight">Blogs</h1>
-              <p className="text-xs text-gray-600">Find posts and connect with authors.</p>
+              <h1 className="text-3xl font-bold text-gray-900 leading-tight">Blogs</h1>
+              <p className="text-sm text-gray-600 mt-1">Discover stories and insights from our alumni community.</p>
             </div>
             {(user?.role === 'alumni') && (
               <button
                 onClick={() => setShowComposer(!showComposer)}
-                className="px-3 py-1.5 rounded-lg text-sm text-white bg-btn-gradient shadow-elev-1 hover:opacity-95"
+                className="px-4 py-2 rounded-lg text-sm font-semibold text-white bg-gradient-to-r from-emerald-500 to-emerald-600 shadow-md hover:shadow-lg transition"
               >
-                {showComposer ? 'Close' : 'Write a Blog'}
+                {showComposer ? 'Close' : '✍️ Write Blog'}
               </button>
             )}
           </div>
 
-          <div className="flex flex-col md:flex-row gap-2 md:items-center">
+          <div className="flex flex-col md:flex-row gap-3 md:items-center">
             <div className="inline-flex bg-gray-100 rounded-lg p-1 w-full md:w-auto overflow-x-auto">
               {allTags.map(t => (
-                <button key={t} onClick={()=>setTag(t)} className={`flex-none px-2.5 py-1 rounded-md text-xs font-medium transition-colors whitespace-nowrap ${tag===t ? 'bg-white text-primary-700 shadow-sm' : 'text-gray-600'}`}>{t}</button>
+                <button key={t} onClick={()=>setTag(t)} className={`flex-none px-3 py-1.5 rounded-md text-sm font-medium transition-colors whitespace-nowrap ${tag===t ? 'bg-white text-emerald-600 shadow-sm font-semibold' : 'text-gray-600 hover:text-gray-900'}`}>{t}</button>
               ))}
             </div>
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <input value={q} onChange={e=>setQ(e.target.value)} placeholder="Search posts or authors..." className="w-full pl-10 pr-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent" />
+              <input value={q} onChange={e=>setQ(e.target.value)} placeholder="Search posts or authors..." className="w-full pl-10 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent" />
             </div>
           </div>
         </div>
-      </div>
-
-      <div className="bg-rose-50 border border-rose-200 text-rose-900 rounded-lg px-4 py-2 text-sm">
-        Blogs are long-form learnings and stories. To connect with an author or find their profile, use the Alumni Directory.
       </div>
 
       {showComposer && (user?.role === 'alumni') && (
@@ -239,39 +236,39 @@ const Blogs: React.FC = () => {
             {(() => {
               const anyB: any = b as any;
               const keyword = (anyB.title || anyB.category || (anyB.tags && anyB.tags[0]) || b.author?.company || 'Alumni Blog').toString();
-              const cover = (anyB.image || `https://placehold.co/1200x600?text=${encodeURIComponent(keyword)}`);
-              return <img src={cover} alt="cover" className="w-full h-40 object-cover"/>;
+              const cover = (anyB.image || `https://images.unsplash.com/photo-1516534775068-bb57ff2ff576?w=1200&h=600&fit=crop`);
+              return <img src={cover} alt="cover" className="w-full h-48 object-cover"/>;
             })()}
             <div className="p-6">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center">
-                  {b.author.profileImage ? (
-                    <img src={b.author.profileImage} alt={b.author.name} className="w-full h-full object-cover"/>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center flex-shrink-0">
+                  {b.author?.profileImage ? (
+                    <img src={b.author.profileImage} alt={b.author?.name || 'Author'} className="w-full h-full object-cover"/>
                   ) : (
                     <UserCircle2 className="h-8 w-8 text-gray-400" />
                   )}
                 </div>
                 <div>
-                  <div className="font-semibold text-gray-900">{b.author.name}</div>
+                  <div className="font-semibold text-gray-900 text-sm">{b.author?.name || 'Unknown'}</div>
                   <div className="text-xs text-gray-500">{new Date((b as any).createdAt).toLocaleDateString()}</div>
                 </div>
               </div>
               {(b as any).title && (
-                <h2 className="text-lg font-bold text-gray-900 mb-2">{(b as any).title}</h2>
+                <h2 className="text-xl font-bold text-gray-900 mb-3 line-clamp-2">{(b as any).title}</h2>
               )}
-              <p className="text-gray-800 leading-relaxed">
-                {b.content}
+              <p className="text-gray-700 leading-relaxed text-sm line-clamp-3 mb-4">
+                {b.content?.substring(0, 150)}...
               </p>
 
               {(b as any).category || (b as any).tags ? (
                 <div className="mt-4 flex flex-wrap items-center gap-2">
                   {(b as any).category && (
-                    <span className="px-2.5 py-1 text-xs font-medium rounded-full bg-purple-100 text-purple-800">
+                    <span className="px-3 py-1 text-xs font-semibold rounded-full bg-emerald-100 text-emerald-700">
                       {(b as any).category}
                     </span>
                   )}
-                  {Array.isArray((b as any).tags) && (b as any).tags.map((t: string, idx: number) => (
-                    <span key={idx} className="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700">
+                  {Array.isArray((b as any).tags) && (b as any).tags.slice(0, 2).map((t: string, idx: number) => (
+                    <span key={idx} className="px-2.5 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700">
                       #{t}
                     </span>
                   ))}
@@ -285,13 +282,7 @@ const Blogs: React.FC = () => {
                       <MessageSquare className="h-4 w-4" /> Connect with Author
                     </button>
                     <button
-                      onClick={() => {
-                        try {
-                          window.dispatchEvent(new CustomEvent('app:navigate' as any, { detail: { page: 'alumni', search: b.author.name } } as any));
-                        } catch {
-                          alert(`Go to Alumni Directory and search for: ${b.author.name}`);
-                        }
-                      }}
+                      onClick={() => navigate(`/alumni/${b.authorId}`)}
                       className="px-4 py-2 rounded-lg border text-gray-700 hover:bg-gray-50"
                     >
                       View Profile

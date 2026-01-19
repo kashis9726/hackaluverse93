@@ -237,11 +237,11 @@ const StartupHub: React.FC = () => {
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-start space-x-3">
                 <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-medium">
-                  {startup.owner.name.charAt(0).toUpperCase()}
+                  {(startup.owner?.name || 'U').charAt(0).toUpperCase()}
                 </div>
                 <div>
                   <h3 className="text-lg font-bold text-gray-900">{startup.title}</h3>
-                  <p className="text-gray-600 text-sm">by {startup.owner.name}</p>
+                  <p className="text-gray-600 text-sm">by {startup.owner?.name || 'Unknown'}</p>
                 </div>
               </div>
               

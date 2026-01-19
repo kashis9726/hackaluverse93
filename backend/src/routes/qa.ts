@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 import Question from '../models/Question';
 import Answer from '../models/Answer';
 import { requireAuth, requireProfileCompleted, requireRole, type AuthRequest } from '../middleware/authMiddleware';
+import { ActivityService } from '../services/activityService';
 
 const router = Router();
 
@@ -33,6 +34,17 @@ router.post('/', requireAuth, requireProfileCompleted, requireRole(['student']),
     content,
   });
 
+  // Log activity - visible to alumni
+  await ActivityService.logActivity({
+    userId: req.user!.id as any,
+    type: 'question_asked',
+    title: `Asked: "${title}"`,
+    description: content.substring(0, 100),
+    relatedId: created._id,
+    relatedType: 'Question',
+    visibility: 'alumni' // Alumni can see questions
+  });
+
   const populated = await Question.findById(created._id).populate('authorId').populate('answers');
   return res.status(201).json(populated || created);
 });
@@ -51,6 +63,19 @@ router.post('/:id/answers', requireAuth, requireProfileCompleted, requireRole(['
     questionId: q._id,
     content,
   });
+
+  // Log activity - visible to public when alumni answers
+  if (req.user!.role === 'alumni') {
+    await ActivityService.logActivity({
+      userId: req.user!.id as any,
+      type: 'answer_posted',
+      title: `Answered question`,
+      description: content.substring(0, 100),
+      relatedId: answer._id,
+      relatedType: 'Answer',
+      visibility: 'public'
+    });
+  }
 
   await Question.updateOne({ _id: q._id }, { $push: { answers: answer._id } });
   const populated = await Answer.findById(answer._id).populate('authorId');

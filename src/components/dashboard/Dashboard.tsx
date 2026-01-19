@@ -1,6 +1,8 @@
 import React from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useApp } from '../../contexts/AppContext';
+import ActivityFeed from '../activity/ActivityFeed';
+import AlumniActivityMonitor from '../activity/AlumniActivityMonitor';
 import {
   TrendingUp,
   Users,
@@ -9,12 +11,20 @@ import {
   BookOpen,
   Lightbulb,
   RefreshCw,
-  Target
+  Target,
+  Briefcase,
+  MapPin,
+  ArrowRight
 } from 'lucide-react';
 
 const Dashboard: React.FC = () => {
   const { user } = useAuth();
   const { posts, events, users } = useApp();
+
+  // Get recent job opportunities for students
+  const recentOpportunities = posts
+    .filter(p => p.type === 'job')
+    .slice(0, 3);
 
   const stats = [
     {
@@ -189,6 +199,65 @@ const Dashboard: React.FC = () => {
         </div>
       </div>
 
+      {/* Latest Opportunities - Students Only */}
+      {user?.role === 'student' && recentOpportunities.length > 0 && (
+        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-gray-900">Latest Opportunities</h2>
+            <a
+              href="/internships"
+              className="flex items-center text-sm text-blue-600 hover:text-blue-700 font-medium"
+            >
+              View All
+              <ArrowRight className="h-4 w-4 ml-1" />
+            </a>
+          </div>
+          <div className="space-y-4">
+            {recentOpportunities.map((post) => {
+              const lines = post.content.split('\n');
+              const header = lines[0] || '';
+              const typeMatch = header.match(/•\s*(\w+)/);
+              const typeLabel = typeMatch ? typeMatch[1] : 'Open';
+              const companyMatch = header.match(/@\s*([^•]+)/);
+              const company = companyMatch ? companyMatch[1].trim() : 'Company';
+              const title = header.split('@')[0].trim();
+
+              return (
+                <div
+                  key={post.id}
+                  className="p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-all cursor-pointer"
+                  onClick={() => window.location.href = '/internships'}
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-start space-x-3 flex-1">
+                      <div className="p-2 bg-blue-100 rounded-lg">
+                        <Briefcase className="h-5 w-5 text-blue-600" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-gray-900 truncate">{title}</h3>
+                        <p className="text-sm text-gray-600">{company}</p>
+                        <div className="flex items-center gap-2 mt-1 text-xs text-gray-500">
+                          <MapPin className="h-3 w-3" />
+                          <span>Posted by {post.author?.name || 'Alumni'}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${typeLabel.toLowerCase().includes('intern')
+                        ? 'bg-amber-100 text-amber-700'
+                        : typeLabel.toLowerCase().includes('freelance')
+                          ? 'bg-fuchsia-100 text-fuchsia-700'
+                          : 'bg-emerald-100 text-emerald-700'
+                      }`}>
+                      {typeLabel}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Recent Activity */}
       <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h2>
@@ -204,6 +273,19 @@ const Dashboard: React.FC = () => {
           ))}
         </div>
       </div>
+
+      {/* Live Activity Feed */}
+      {user?.role === 'alumni' ? (
+        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Student Activity Monitor</h2>
+          <AlumniActivityMonitor />
+        </div>
+      ) : (
+        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Community Activity Feed</h2>
+          <ActivityFeed limit={20} />
+        </div>
+      )}
     </div>
   );
 };

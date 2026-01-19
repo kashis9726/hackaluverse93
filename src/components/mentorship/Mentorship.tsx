@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useApp } from '../../contexts/AppContext';
+import { useNavigate } from 'react-router-dom';
 import { Users, Search, MessageSquare, Star, MapPin, Calendar, Filter } from 'lucide-react';
 
 const Mentorship: React.FC = () => {
@@ -15,8 +16,8 @@ const Mentorship: React.FC = () => {
     getChatRoom([user.id, mentorId]);
   };
 
-  const mentors = users.filter(u => 
-    u.role === 'alumni' && 
+  const mentors = users.filter(u =>
+    u.role === 'alumni' &&
     u.isVerified &&
     u.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
     (!filterDepartment || u.department === filterDepartment) &&
@@ -46,7 +47,7 @@ const Mentorship: React.FC = () => {
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
-          
+
           <select
             value={filterDepartment}
             onChange={(e) => setFilterDepartment(e.target.value)}
@@ -57,7 +58,7 @@ const Mentorship: React.FC = () => {
               <option key={dept} value={dept}>{dept}</option>
             ))}
           </select>
-          
+
           <select
             value={filterSkill}
             onChange={(e) => setFilterSkill(e.target.value)}
@@ -68,7 +69,7 @@ const Mentorship: React.FC = () => {
               <option key={skill} value={skill}>{skill}</option>
             ))}
           </select>
-          
+
           <button className="flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
             <Filter className="h-4 w-4 mr-2" />
             Advanced Filters
@@ -79,77 +80,89 @@ const Mentorship: React.FC = () => {
       {/* Mentors Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {mentors.map((mentor) => (
-          <div key={mentor.id} className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
-            <div className="flex items-start space-x-4 mb-4">
-              <div className="relative">
-                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-xl font-bold">
-                  {mentor.name.charAt(0).toUpperCase()}
+          <div key={mentor.id} className="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-200 hover:shadow-lg transition-all">
+            {/* Cover Banner */}
+            <div className="h-20 bg-gradient-to-r from-blue-500 via-purple-500 to-indigo-600"></div>
+
+            {/* Profile Section */}
+            <div className="px-6 pb-6">
+              {/* Avatar - Overlapping the banner */}
+              <div className="flex justify-between items-start -mt-12 mb-4">
+                <div className="relative">
+                  <div className="w-24 h-24 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-2xl font-bold border-4 border-white shadow-lg">
+                    {mentor.name.charAt(0).toUpperCase()}
+                  </div>
+                  {mentor.isOnline && (
+                    <div className="absolute bottom-1 right-1 w-5 h-5 bg-green-500 border-3 border-white rounded-full"></div>
+                  )}
                 </div>
-                {mentor.isOnline && (
-                  <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-white rounded-full"></div>
-                )}
+                <div className="flex items-center gap-1 mt-14">
+                  <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
+                  <span className="text-sm font-semibold text-gray-700">{mentor.points}</span>
+                </div>
               </div>
-              
-              <div className="flex-1 min-w-0">
-                <h3 className="text-lg font-semibold text-gray-900 truncate">{mentor.name}</h3>
-                <p className="text-blue-600 font-medium">{mentor.position}</p>
+
+              {/* Name and Title */}
+              <div className="mb-4">
+                <h3 className="text-xl font-bold text-gray-900 mb-1">{mentor.name}</h3>
+                <p className="text-blue-600 font-semibold text-sm mb-1">{mentor.position}</p>
                 <p className="text-gray-600 text-sm">{mentor.company}</p>
               </div>
-            </div>
 
-            <div className="space-y-3 mb-4">
-              {mentor.department && (
-                <div className="flex items-center space-x-2 text-sm text-gray-600">
-                  <MapPin className="h-4 w-4" />
-                  <span>{mentor.department}</span>
-                </div>
-              )}
-              
-              <div className="flex items-center space-x-2 text-sm text-gray-600">
-                <Calendar className="h-4 w-4" />
-                <span>Class of {mentor.graduationYear}</span>
-              </div>
-              
-              <div className="flex items-center space-x-2 text-sm text-gray-600">
-                <Star className="h-4 w-4" />
-                <span>{mentor.points} contribution points</span>
-              </div>
-            </div>
-
-            {mentor.bio && (
-              <p className="text-gray-600 text-sm mb-4 line-clamp-2">{mentor.bio}</p>
-            )}
-
-            <div className="mb-4">
-              <h4 className="text-sm font-medium text-gray-900 mb-2">Skills & Expertise</h4>
-              <div className="flex flex-wrap gap-2">
-                {mentor.skills?.slice(0, 4).map((skill, index) => (
-                  <span
-                    key={index}
-                    className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full"
-                  >
-                    {skill}
-                  </span>
-                ))}
-                {(mentor.skills?.length || 0) > 4 && (
-                  <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs font-medium rounded-full">
-                    +{(mentor.skills?.length || 0) - 4} more
-                  </span>
+              {/* Info Pills */}
+              <div className="flex flex-wrap gap-2 mb-4">
+                {mentor.department && (
+                  <div className="flex items-center gap-1 px-3 py-1 bg-gray-100 rounded-full text-xs text-gray-700">
+                    <MapPin className="h-3 w-3" />
+                    <span>{mentor.department}</span>
+                  </div>
                 )}
+                <div className="flex items-center gap-1 px-3 py-1 bg-gray-100 rounded-full text-xs text-gray-700">
+                  <Calendar className="h-3 w-3" />
+                  <span>Class of {mentor.graduationYear}</span>
+                </div>
               </div>
-            </div>
 
-            <div className="flex space-x-2">
-              <button
-                onClick={() => startMentorshipChat(mentor.id)}
-                className="flex-1 flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                <MessageSquare className="h-4 w-4 mr-2" />
-                Connect
-              </button>
-              <button className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
-                View Profile
-              </button>
+              {/* Bio */}
+              {mentor.bio && (
+                <p className="text-gray-600 text-sm mb-4 line-clamp-3 leading-relaxed">{mentor.bio}</p>
+              )}
+
+              {/* Skills */}
+              <div className="mb-4">
+                <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Skills & Expertise</h4>
+                <div className="flex flex-wrap gap-2">
+                  {mentor.skills?.slice(0, 5).map((skill, index) => (
+                    <span
+                      key={index}
+                      className="px-3 py-1 bg-blue-50 text-blue-700 text-xs font-medium rounded-md border border-blue-200"
+                    >
+                      {skill}
+                    </span>
+                  ))}
+                  {(mentor.skills?.length || 0) > 5 && (
+                    <span className="px-3 py-1 bg-gray-50 text-gray-600 text-xs font-medium rounded-md border border-gray-200">
+                      +{(mentor.skills?.length || 0) - 5}
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-2 pt-4 border-t border-gray-100">
+                <button
+                  onClick={() => startMentorshipChat(mentor.id)}
+                  className="flex-1 flex items-center justify-center px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm"
+                >
+                  <MessageSquare className="h-4 w-4 mr-2" />
+                  Connect
+                </button>
+                <button
+                  className="px-4 py-2.5 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium text-sm"
+                >
+                  Profile
+                </button>
+              </div>
             </div>
           </div>
         ))}
@@ -174,7 +187,7 @@ const Mentorship: React.FC = () => {
             <div>
               <h3 className="text-lg font-medium text-blue-900 mb-2">Become a Mentor</h3>
               <p className="text-blue-800 mb-3">
-                Share your expertise and help the next generation of professionals. 
+                Share your expertise and help the next generation of professionals.
                 Enable mentorship in your profile settings to appear in the directory.
               </p>
               <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
