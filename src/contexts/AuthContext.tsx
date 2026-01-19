@@ -26,7 +26,8 @@ interface AuthProviderProps {
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const API_BASE = '/api';
+  const API_BASE = import.meta.env.VITE_API_URL;
+
   const REQUEST_TIMEOUT_MS = 10000;
 
   const normalizeUser = (u: User): User => {
