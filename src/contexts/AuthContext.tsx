@@ -26,7 +26,8 @@ interface AuthProviderProps {
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const API_BASE = import.meta.env.VITE_API_URL;
+  const API_BASE = 'https://backend99-eoqn.onrender.com/api';
+
 
   const REQUEST_TIMEOUT_MS = 10000;
 
