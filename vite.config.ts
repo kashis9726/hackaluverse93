@@ -14,5 +14,8 @@ export default defineConfig({
   },
   // Base path configuration - use '/' for Netlify, Vercel
   // For GitHub Pages, use '/AluVerse-project/'
-  base: process.env.NODE_ENV === 'production' ? '/AluVerse-project/' : '/',
+ base: process.env.NODE_ENV === 'production'
+  ? '/hackaluverse93/'
+  : '/',
+
 });
