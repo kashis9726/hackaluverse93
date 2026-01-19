@@ -11,14 +11,16 @@ const UserManagement: React.FC = () => {
   const filteredUsers = useMemo(() => {
     return users.filter(user => {
       const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          user.email.toLowerCase().includes(searchTerm.toLowerCase());
+        user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (user.company && user.company.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (user.position && user.position.toLowerCase().includes(searchTerm.toLowerCase()));
       const matchesRole = selectedRole === '' || user.role === selectedRole;
-      const statusFilter = selectedStatus === '' || 
-                         (selectedStatus === 'online' && user.isOnline) ||
-                         (selectedStatus === 'offline' && !user.isOnline) ||
-                         (selectedStatus === 'verified' && user.isVerified) ||
-                         (selectedStatus === 'unverified' && !user.isVerified);
-      
+      const statusFilter = selectedStatus === '' ||
+        (selectedStatus === 'online' && user.isOnline) ||
+        (selectedStatus === 'offline' && !user.isOnline) ||
+        (selectedStatus === 'verified' && user.isVerified) ||
+        (selectedStatus === 'unverified' && !user.isVerified);
+
       return matchesSearch && matchesRole && statusFilter;
     });
   }, [users, searchTerm, selectedRole, selectedStatus]);
@@ -35,7 +37,7 @@ const UserManagement: React.FC = () => {
     .slice(0, 8);
 
   const recentActivities = useMemo(() => {
-    const activities: Array<{id: string, type: string, user: any, action: string, time: Date, details?: string}> = [];
+    const activities: Array<{ id: string, type: string, user: any, action: string, time: Date, details?: string }> = [];
 
     // Add post activities
     posts.slice(-10).forEach(post => {
@@ -148,7 +150,7 @@ const UserManagement: React.FC = () => {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
             <input
               type="text"
-              placeholder="Search by name or email..."
+              placeholder="Search by name, email, company..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
@@ -184,13 +186,14 @@ const UserManagement: React.FC = () => {
           <h2 className="text-lg font-semibold text-gray-900 mb-4">
             User Directory ({filteredUsers.length} users)
           </h2>
-          
+
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-gray-200">
                   <th className="text-left py-3 font-medium text-gray-900">User</th>
                   <th className="text-center py-3 font-medium text-gray-900">Role</th>
+                  <th className="text-left py-3 font-medium text-gray-900">Professional</th>
                   <th className="text-center py-3 font-medium text-gray-900">Department</th>
                   <th className="text-center py-3 font-medium text-gray-900">Status</th>
                   <th className="text-center py-3 font-medium text-gray-900">Points</th>
@@ -202,8 +205,14 @@ const UserManagement: React.FC = () => {
                   <tr key={user.id} className="border-b border-gray-100">
                     <td className="py-3">
                       <div className="flex items-center space-x-3">
-                        <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-xs font-medium">
-                          {user.name.charAt(0).toUpperCase()}
+                        <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 bg-gray-100">
+                          {user.profileImage ? (
+                            <img src={user.profileImage} alt="" className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-xs font-medium">
+                              {user.name.charAt(0).toUpperCase()}
+                            </div>
+                          )}
                         </div>
                         <div>
                           <div className="font-medium text-gray-900">{user.name}</div>
@@ -212,13 +221,22 @@ const UserManagement: React.FC = () => {
                       </div>
                     </td>
                     <td className="text-center py-3">
-                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                        user.role === 'admin' ? 'bg-purple-100 text-purple-800' :
-                        user.role === 'alumni' ? 'bg-blue-100 text-blue-800' :
-                        'bg-green-100 text-green-800'
-                      }`}>
+                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${user.role === 'admin' ? 'bg-purple-100 text-purple-800' :
+                          user.role === 'alumni' ? 'bg-blue-100 text-blue-800' :
+                            'bg-green-100 text-green-800'
+                        }`}>
                         {user.role}
                       </span>
+                    </td>
+                    <td className="text-left py-3">
+                      {user.company ? (
+                        <div>
+                          <div className="text-sm font-medium text-gray-900">{user.company}</div>
+                          <div className="text-xs text-gray-500">{user.position}</div>
+                        </div>
+                      ) : (
+                        <span className="text-gray-400 text-xs">-</span>
+                      )}
                     </td>
                     <td className="text-center py-3 text-xs text-gray-600">
                       {user.department || '-'}
@@ -272,12 +290,11 @@ const UserManagement: React.FC = () => {
             <div className="space-y-3">
               {topContributors.map((user, index) => (
                 <div key={user.id} className="flex items-center space-x-3">
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${
-                    index === 0 ? 'bg-yellow-100 text-yellow-800' :
-                    index === 1 ? 'bg-gray-100 text-gray-800' :
-                    index === 2 ? 'bg-orange-100 text-orange-800' :
-                    'bg-blue-50 text-blue-600'
-                  }`}>
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${index === 0 ? 'bg-yellow-100 text-yellow-800' :
+                      index === 1 ? 'bg-gray-100 text-gray-800' :
+                        index === 2 ? 'bg-orange-100 text-orange-800' :
+                          'bg-blue-50 text-blue-600'
+                    }`}>
                     #{index + 1}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -299,16 +316,15 @@ const UserManagement: React.FC = () => {
             <div className="space-y-3">
               {recentActivities.slice(0, 10).map((activity) => (
                 <div key={activity.id} className="flex items-start space-x-3">
-                  <div className={`p-1.5 rounded-lg ${
-                    activity.type === 'job' ? 'bg-emerald-50 text-emerald-600' :
-                    activity.type === 'blog' ? 'bg-blue-50 text-blue-600' :
-                    activity.type === 'event' ? 'bg-purple-50 text-purple-600' :
-                    'bg-orange-50 text-orange-600'
-                  }`}>
+                  <div className={`p-1.5 rounded-lg ${activity.type === 'job' ? 'bg-emerald-50 text-emerald-600' :
+                      activity.type === 'blog' ? 'bg-blue-50 text-blue-600' :
+                        activity.type === 'event' ? 'bg-purple-50 text-purple-600' :
+                          'bg-orange-50 text-orange-600'
+                    }`}>
                     {activity.type === 'job' ? <Users className="h-3 w-3" /> :
-                     activity.type === 'blog' ? <BookOpen className="h-3 w-3" /> :
-                     activity.type === 'event' ? <Calendar className="h-3 w-3" /> :
-                     <MessageCircle className="h-3 w-3" />}
+                      activity.type === 'blog' ? <BookOpen className="h-3 w-3" /> :
+                        activity.type === 'event' ? <Calendar className="h-3 w-3" /> :
+                          <MessageCircle className="h-3 w-3" />}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="text-sm">

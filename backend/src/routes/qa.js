@@ -8,6 +8,7 @@ const mongoose_1 = __importDefault(require("mongoose"));
 const Question_1 = __importDefault(require("../models/Question"));
 const Answer_1 = __importDefault(require("../models/Answer"));
 const authMiddleware_1 = require("../middleware/authMiddleware");
+const activityService_1 = require("../services/activityService");
 const router = (0, express_1.Router)();
 const ensureDb = (res) => {
     if (mongoose_1.default.connection.readyState !== 1) {
@@ -35,6 +36,16 @@ router.post('/', authMiddleware_1.requireAuth, authMiddleware_1.requireProfileCo
         title,
         content,
     });
+    // Log activity - visible to alumni
+    await activityService_1.ActivityService.logActivity({
+        userId: req.user.id,
+        type: 'question_asked',
+        title: `Asked: "${title}"`,
+        description: content.substring(0, 100),
+        relatedId: created._id,
+        relatedType: 'Question',
+        visibility: 'alumni' // Alumni can see questions
+    });
     const populated = await Question_1.default.findById(created._id).populate('authorId').populate('answers');
     return res.status(201).json(populated || created);
 });
@@ -53,6 +64,18 @@ router.post('/:id/answers', authMiddleware_1.requireAuth, authMiddleware_1.requi
         questionId: q._id,
         content,
     });
+    // Log activity - visible to public when alumni answers
+    if (req.user.role === 'alumni') {
+        await activityService_1.ActivityService.logActivity({
+            userId: req.user.id,
+            type: 'answer_posted',
+            title: `Answered question`,
+            description: content.substring(0, 100),
+            relatedId: answer._id,
+            relatedType: 'Answer',
+            visibility: 'public'
+        });
+    }
     await Question_1.default.updateOne({ _id: q._id }, { $push: { answers: answer._id } });
     const populated = await Answer_1.default.findById(answer._id).populate('authorId');
     return res.status(201).json(populated || answer);

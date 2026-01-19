@@ -18,6 +18,7 @@ const Event_1 = __importDefault(require("../models/Event"));
 const Challenge_1 = __importDefault(require("../models/Challenge"));
 const Internship_1 = __importDefault(require("../models/Internship"));
 const Startup_1 = __importDefault(require("../models/Startup"));
+const Activity_1 = __importDefault(require("../models/Activity"));
 const password_1 = require("../utils/password");
 const token_1 = require("../utils/token");
 const seedData_1 = require("./seedData");
@@ -32,9 +33,10 @@ async function seedDatabase() {
         }
         await mongoose_1.default.connect(mongoUri);
         (0, utils_1.log)('[SEED]', '✓ Connected to MongoDB');
-        // Clear existing users
+        // Clear existing data
         await User_1.default.deleteMany({});
-        (0, utils_1.log)('[SEED]', '✓ Cleared existing users');
+        await Activity_1.default.deleteMany({});
+        (0, utils_1.log)('[SEED]', '✓ Cleared existing users and activities');
         // Create user map for reference
         const userMap = {};
         // Seed students
@@ -86,17 +88,27 @@ async function seedDatabase() {
         // Seed blogs
         (0, utils_1.log)('[SEED]', '\n📝 Seeding Blogs...');
         for (const blog of comprehensiveSeedData_1.BLOGS_SEED_DATA) {
-            await Blog_1.default.create({
-                title: blog.title,
-                slug: blog.slug,
+            const blogKeyword = `${blog.title} ${blog.category}`;
+            const blogImage = `https://images.unsplash.com/photo-${Math.floor(Math.random() * 1000000)}?w=1200&h=600&fit=crop`;
+            const authorId = userMap['Rahul Desai'] || userMap['Divya Patel'] || userMap['Vikram Sharma'] || userMap['Anjali Gupta'];
+            const blogDoc = await Blog_1.default.create({
+                authorId,
                 content: blog.content,
-                excerpt: blog.excerpt,
-                author: userMap['Rahul Desai'] || userMap['Divya Patel'] || userMap['Vikram Sharma'] || userMap['Anjali Gupta'],
-                tags: blog.tags,
+                image: blogImage,
                 category: blog.category,
-                views: blog.views,
-                likes: blog.likes,
-                published_at: blog.published_at,
+                tags: blog.tags,
+                type: 'post',
+                createdAt: blog.published_at,
+            });
+            // Log activity
+            await Activity_1.default.create({
+                userId: authorId,
+                type: 'blog_created',
+                title: `Published blog: "${blog.title}"`,
+                description: blog.content.substring(0, 100),
+                relatedId: blogDoc._id,
+                relatedType: 'Blog',
+                visibility: 'public',
                 createdAt: blog.published_at,
             });
             (0, utils_1.log)('[SEED]', `✓ Created blog: ${blog.title}`);

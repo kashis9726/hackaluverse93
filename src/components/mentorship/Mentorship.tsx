@@ -7,6 +7,7 @@ import { Users, Search, MessageSquare, Star, MapPin, Calendar, Filter } from 'lu
 const Mentorship: React.FC = () => {
   const { user } = useAuth();
   const { users, getChatRoom } = useApp();
+  const navigate = useNavigate(); // Added
   const [searchQuery, setSearchQuery] = useState('');
   const [filterDepartment, setFilterDepartment] = useState('');
   const [filterSkill, setFilterSkill] = useState('');
@@ -158,6 +159,7 @@ const Mentorship: React.FC = () => {
                   Connect
                 </button>
                 <button
+                  onClick={() => navigate(`/alumni/${mentor.id}`)}
                   className="px-4 py-2.5 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium text-sm"
                 >
                   Profile

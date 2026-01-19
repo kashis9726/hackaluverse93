@@ -12,9 +12,93 @@ const Header: React.FC<HeaderProps> = ({ onChatToggle }) => {
   const { user, logout } = useAuth();
   const [showProfile, setShowProfile] = useState(false);
   const [showNotifs, setShowNotifs] = useState(false);
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const notifCount = 3;
-  const messageCount = 2;
+  // Fetch notifications
+  React.useEffect(() => {
+    if (!user) return;
+
+    const fetchNotifications = async () => {
+      try {
+        const token = localStorage.getItem('authToken');
+        if (!token) return;
+
+        const res = await fetch('/api/notifications', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          // Assuming API returns { notifications: [...] }
+          setNotifications(data.notifications || []);
+        }
+      } catch (error) {
+        console.error('Failed to fetch notifications', error);
+      }
+    };
+
+    fetchNotifications();
+    // Poll every 30 seconds
+    const interval = setInterval(fetchNotifications, 30000);
+    return () => clearInterval(interval);
+  }, [user]);
+
+  const unreadCount = notifications.filter(n => !n.isRead).length;
+
+  const handleMarkAsRead = async (id: string, refId: string, type: string) => {
+    try {
+      // Optimistic update
+      setNotifications(prev => prev.map(n => n._id === id ? { ...n, isRead: true } : n));
+
+      // API Call
+      const token = localStorage.getItem('authToken');
+      if (token) {
+        await fetch('/api/notifications/mark-read', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({ notificationIds: [id] })
+        });
+      }
+
+      // Navigation based on type
+      if (type === 'internship') navigate(`/internships`);
+      else if (type === 'post') navigate(`/blogs`);
+      else if (type === 'connection') navigate(`/alumni`);
+
+      setShowNotifs(false);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleMarkAllRead = async () => {
+    try {
+      const unreadIds = notifications.filter(n => !n.isRead).map(n => n._id);
+      if (unreadIds.length === 0) return;
+
+      setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+
+      const token = localStorage.getItem('authToken');
+      if (token) {
+        await fetch('/api/notifications/mark-read', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({ notificationIds: unreadIds })
+        });
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const messageCount = 0; // Placeholder for now
 
   return (
     <header className="sticky top-0 z-40 w-full bg-white/60 backdrop-blur-md border-b border-emerald-200/20 shadow-none">
@@ -41,22 +125,54 @@ const Header: React.FC<HeaderProps> = ({ onChatToggle }) => {
               title="Notifications"
             >
               <Bell className="h-5 w-5" />
-              {notifCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-orange-500 text-white text-xs font-bold rounded-full h-4 w-4 flex items-center justify-center text-[10px]">
-                  {notifCount}
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-rose-500 text-white text-xs font-bold rounded-full h-4 w-4 flex items-center justify-center text-[10px]">
+                  {unreadCount > 9 ? '9+' : unreadCount}
                 </span>
               )}
             </button>
 
             {showNotifs && (
-              <div className="absolute right-0 mt-2 w-72 bg-white rounded-lg shadow-lg border border-emerald-200 p-3 z-50">
-                <div className="text-xs uppercase tracking-wide text-emerald-600 font-bold mb-2">Notifications</div>
-                <div className="space-y-1.5 max-h-64 overflow-y-auto">
-                  {[...Array(Math.min(notifCount, 3))].map((_, i) => (
-                    <div key={i} className="p-2 rounded-lg hover:bg-emerald-50 text-sm text-gray-700">
-                      New opportunity available
+              <div className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-xl border border-emerald-100 flex flex-col overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                <div className="px-4 py-3 border-b border-emerald-50 flex justify-between items-center bg-emerald-50/50">
+                  <span className="text-sm font-bold text-emerald-900">Notifications</span>
+                  {unreadCount > 0 && (
+                    <button
+                      onClick={handleMarkAllRead}
+                      className="text-xs text-emerald-600 hover:text-emerald-700 font-medium hover:underline"
+                    >
+                      Mark all read
+                    </button>
+                  )}
+                </div>
+
+                <div className="max-h-[320px] overflow-y-auto">
+                  {notifications.length === 0 ? (
+                    <div className="p-8 text-center text-gray-500 text-sm">
+                      <span className="block mb-1">🔕</span>
+                      No notifications yet
                     </div>
-                  ))}
+                  ) : (
+                    notifications.map((notif) => (
+                      <div
+                        key={notif._id}
+                        onClick={() => handleMarkAsRead(notif._id, notif.referenceId, notif.type)}
+                        className={`px-4 py-3 border-b border-gray-50 last:border-0 cursor-pointer transition-colors hover:bg-emerald-50/30 ${!notif.isRead ? 'bg-emerald-50/40 border-l-2 border-l-emerald-500' : ''}`}
+                      >
+                        <div className="flex gap-3">
+                          <div className={`mt-1 h-2 w-2 rounded-full flex-shrink-0 ${!notif.isRead ? 'bg-emerald-500' : 'bg-transparent'}`} />
+                          <div>
+                            <p className={`text-sm ${!notif.isRead ? 'font-semibold text-gray-900' : 'text-gray-600'}`}>
+                              {notif.message}
+                            </p>
+                            <p className="text-xs text-gray-400 mt-1">
+                              {new Date(notif.createdAt).toLocaleDateString()} • {new Date(notif.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  )}
                 </div>
               </div>
             )}
@@ -83,7 +199,7 @@ const Header: React.FC<HeaderProps> = ({ onChatToggle }) => {
               className="flex items-center gap-2 px-2 py-1 rounded-lg hover:bg-emerald-50 transition-colors group"
             >
               <div className="w-7 h-7 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center text-white text-xs font-bold">
-                {user?.name?.charAt(0).toUpperCase() || 'K'}
+                {user?.name?.charAt(0).toUpperCase() || 'U'}
               </div>
               <ChevronDown className="h-3 w-3 text-emerald-700 group-hover:rotate-180 transition-transform" />
             </button>

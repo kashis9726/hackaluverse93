@@ -72,9 +72,16 @@ class AuthService {
         const user = role ?
             await User_1.default.findOne({ email, role }) :
             await User_1.default.findOne({ email });
-        if (!user)
+        if (!user) {
+            log('[AUTH] login', `User not found: ${email}`);
             throw new Error(constants_1.ERROR_MESSAGES.INVALID_CREDENTIALS);
-        if (!user.passwordHash || !(0, password_1.verifyPassword)(password, user.passwordHash)) {
+        }
+        if (!user.passwordHash) {
+            log('[AUTH] login', `User has no password hash: ${email}`);
+            throw new Error(constants_1.ERROR_MESSAGES.INVALID_CREDENTIALS);
+        }
+        if (!(0, password_1.verifyPassword)(password, user.passwordHash)) {
+            log('[AUTH] login', `Password mismatch for user: ${email}`);
             throw new Error(constants_1.ERROR_MESSAGES.INVALID_CREDENTIALS);
         }
         if (user.role === 'admin') {

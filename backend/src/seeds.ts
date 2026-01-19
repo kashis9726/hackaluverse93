@@ -17,8 +17,13 @@ import Question from './models/Question';
 import Answer from './models/Answer';
 import Event from './models/Event';
 import Challenge from './models/Challenge';
+import ReversePitch from './models/ReversePitch'; // Added
 import Internship from './models/Internship';
 import Startup from './models/Startup';
+import Connection from './models/Connection';
+import SearchHistory from './models/SearchHistory';
+import ProfileView from './models/ProfileView';
+import Notification from './models/Notification';
 
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
@@ -175,8 +180,15 @@ async function seedDatabase() {
     await Answer.deleteMany({});
     await Event.deleteMany({});
     await Challenge.deleteMany({});
+    await (ReversePitch as any).deleteMany({}); // Added
     await Internship.deleteMany({});
     await Startup.deleteMany({});
+
+    // Clear new features
+    await Connection.deleteMany({});
+    await SearchHistory.deleteMany({});
+    await ProfileView.deleteMany({});
+    await Notification.deleteMany({});
     console.log('✓ Cleared all collections');
 
     const userMap: { [key: string]: string } = {};
@@ -204,37 +216,113 @@ async function seedDatabase() {
       console.log(`   ✓ ${student.name}`);
     }
 
-    console.log('\n🎓 Seeding Alumni...');
-    for (const alumni of alumniUsers) {
+    // Generate 15 more random Students
+    for (let i = 0; i < 15; i++) {
+      const name = `Student ${i + 1}`;
       const user = await User.create({
-        name: alumni.name,
-        email: alumni.email.toLowerCase(),
-        role: alumni.role,
-        passwordHash: hashPassword(alumni.password),
+        name,
+        email: `student${i + 1}@ldce.ac.in`,
+        role: 'student',
+        passwordHash: hashPassword('password123'),
         authToken: newToken(),
         profileCompleted: true,
-        profileVisible: true,
-        company: alumni.company,
-        position: alumni.position,
-        domain: alumni.domain,
-        yearsOfExperience: alumni.yearsOfExperience,
-        availability: alumni.availability,
-        capabilities: alumni.capabilities,
-        bio: alumni.bio,
-        linkedinUrl: alumni.linkedinUrl,
-        githubUrl: alumni.githubUrl,
-        personalWebsite: alumni.personalWebsite,
-        isVerified: true,
+        year: ['1st', '2nd', '3rd', '4th'][Math.floor(Math.random() * 4)] + ' Year',
+        branch: ['Computer Science', 'IT', 'EC', 'Mechanical', 'Civil'][Math.floor(Math.random() * 5)],
+        skills: ['Java', 'Python', 'C++'].sort(() => 0.5 - Math.random()).slice(0, 2),
+        interests: ['Coding', 'Sports', 'Music'],
+        isVerified: true
       });
-      userMap[alumni.name] = user._id.toString();
-      console.log(`   ✓ ${alumni.name}`);
+      userMap[name] = user._id.toString();
+      // console.log(`   ✓ ${name}`);
     }
+
+    console.log('\n🎓 Seeding Alumni...');
+
+    // Generate Manual Alumni
+    for (const alumni of alumniUsers) {
+      if (!userMap[alumni.name]) {
+        try {
+          const user = await User.create({
+            name: alumni.name,
+            email: alumni.email.toLowerCase(),
+            role: alumni.role,
+            passwordHash: hashPassword(alumni.password),
+            authToken: newToken(),
+            company: alumni.company,
+            position: alumni.position,
+            domain: alumni.domain,
+            // ... other fields if needed, or rely on defaults/schema
+            profileCompleted: true,
+            isVerified: true
+          });
+          userMap[user.name] = user._id.toString();
+          console.log(`   ✓ ${user.name} (Manual)`);
+        } catch (e) { console.log(`Skipping ${alumni.name}`); }
+      }
+    }
+
+    // Generate 50 realistic Alumni profiles
+    const alumniNames = [
+      'Vikram Malhotra', 'Sanya Gupta', 'Deepak Verma', 'Ananya Iyer', 'Rahul Nair',
+      'Priya Desai', 'Arjun Kapoor', 'Meera Reddy', 'Siddharth Joshi', 'Ishita Sharma',
+      'Kunal Shah', 'Neha Patel', 'Rohan Mehta', 'Divya Singh', 'Amitabh Roy',
+      'Kavita Krishnan', 'Rajesh Kumar', 'Sneha Agarwal', 'Manish Tiwari', 'Pooja Hegde',
+      'Varun Dhawan', 'Alia Bhatt', 'Ranbir Kapoor', 'Deepika Padukone', 'Ranveer Singh',
+      'Vicky Kaushal', 'Katrina Kaif', 'Ayushmann Khurrana', 'Taapsee Pannu', 'Rajkummar Rao',
+      'Nawazuddin Siddiqui', 'Pankaj Tripathi', 'Manoj Bajpayee', 'Radhika Apte', 'Tabu',
+      'Irrfan Khan', 'Naseeruddin Shah', 'Om Puri', 'Amrish Puri', 'Anupam Kher',
+      'Paresh Rawal', 'Boman Irani', 'Saurabh Shukla', 'Vijay Raaz', 'Sanjay Mishra',
+      'Johnny Lever', 'Mehmood', 'Kishore Kumar', 'Mukesh', 'Mohammed Rafi'
+    ];
+
+    const techCompanies = ['Google', 'Microsoft', 'Amazon', 'Meta', 'Netflix', 'Apple', 'Uber', 'Airbnb', 'Stripe', 'Coinbase', 'Flipkart', 'Swiggy', 'Zomato', 'Paytm', 'Ola', 'Razorpay', 'Cred', 'Zerodha', 'Groww', 'Nykaa'];
+    const techRoles = ['Senior Software Engineer', 'Product Manager', 'Data Scientist', 'Engineering Manager', 'CTO', 'Founding Engineer', 'Staff Engineer', 'Principal Architect', 'DevOps Lead', 'Machine Learning Engineer'];
+    const techDomains = ['Cloud Computing', 'Artificial Intelligence', 'Cybersecurity', 'Fintech', 'E-commerce', 'EdTech', 'HealthTech', 'Blockchain', 'IoT', 'SaaS'];
+
+    for (let i = 0; i < 50; i++) {
+      const name = alumniNames[i] || `Alumni User ${i + 1}`;
+      const company = techCompanies[i % techCompanies.length];
+      const role = techRoles[i % techRoles.length];
+      const domain = techDomains[i % techDomains.length];
+
+      try {
+        const user = await User.create({
+          name: name,
+          email: `alumni${i + 100}@ldce.ac.in`,
+          role: 'alumni',
+          passwordHash: hashPassword('password123'),
+          authToken: newToken(),
+          isVerified: true,
+          profileCompleted: true,
+          profileVisible: true,
+          // company: company,
+          // position: role,
+          // domain: domain,
+          // yearsOfExperience: Math.floor(Math.random() * 15) + 3, 
+          // availability: ['Open', 'Limited', 'Busy'][Math.floor(Math.random() * 3)],
+          // department: ['Computer Science', 'Information Technology', 'Electronics', 'Mechanical', 'Electrical'][Math.floor(Math.random() * 5)],
+          // graduationYear: 2010 + Math.floor(Math.random() * 12),
+          // skills: ['React', 'Node.js', 'Python', 'AWS', 'System Design', 'Leadership', 'Mentoring', 'Java', 'Kubernetes', 'Go'].sort(() => 0.5 - Math.random()).slice(0, 5),
+          // interests: ['Mentoring', 'Startups', 'Open Source', 'Career Guidance', 'Tech Talks'],
+          // bio: `${role} at ${company} with over ${3 + Math.floor(Math.random() * 10)} years of experience in ${domain}. Passionate about building scalable systems and mentoring junior developers. Previously worked at multiple high-growth startups.`,
+          // points: Math.floor(Math.random() * 500),
+          // badges: Math.random() > 0.5 ? ['Top Mentor', 'Domain Expert'] : ['Helpful'],
+          // profileImage: '', 
+          // linkedinUrl: `https://linkedin.com/in/${name.toLowerCase().replace(' ', '-')}`,
+        });
+        userMap[user.name] = user._id.toString();
+      } catch (err: any) {
+        console.error(`Failed to create ${name}: ${err.message}`);
+      }
+      // console.log(`   ✓ ${user.name} (${user.company})`); // reduce noise
+    }
+    console.log(`   ✓ Seeded 50+ diverse alumni profiles`);
 
     // ==================== SEED BLOGS (Alumni) ====================
     console.log('\n📝 Seeding Blogs by Alumni...');
     const blogs = [
       {
-        authorId: userMap['Rahul Desai'],
+        authorId: userMap['Vikram Malhotra'],
         type: 'post',
         content: 'Building Scalable Systems with Node.js & MongoDB\n\nIn this comprehensive guide, I share my experience building distributed systems at Google. Learn about scaling strategies, database optimization, caching mechanisms, and best practices for production systems. We discuss how to handle millions of concurrent users.',
         image: 'https://via.placeholder.com/400x250?text=Scalable+Systems',
@@ -243,7 +331,7 @@ async function seedDatabase() {
         comments: [],
       },
       {
-        authorId: userMap['Divya Patel'],
+        authorId: userMap['Sanya Gupta'],
         type: 'post',
         content: 'ML Models in Production: Real-world Challenges\n\nDeploying ML models is different from training them. In this post, I discuss the challenges we face at Amazon with real-time inference, monitoring, continuous retraining, and handling model drift. Learn from production-level ML experiences.',
         image: 'https://via.placeholder.com/400x250?text=ML+Production',
@@ -252,7 +340,7 @@ async function seedDatabase() {
         comments: [],
       },
       {
-        authorId: userMap['Vikram Sharma'],
+        authorId: userMap['Deepak Verma'],
         type: 'post',
         content: 'From Idea to IPO: Our Startup Journey\n\nStarting a company is exciting but challenging. Here are the lessons I learned building our SaaS product from scratch, raising funds from VCs, scaling the team from 2 to 50, navigating the market, and preparing for IPO.',
         image: 'https://via.placeholder.com/400x250?text=Startup+Journey',
@@ -261,7 +349,7 @@ async function seedDatabase() {
         comments: [],
       },
       {
-        authorId: userMap['Anjali Gupta'],
+        authorId: userMap['Ananya Iyer'],
         type: 'post',
         content: 'Product Strategy: Data-Driven Decision Making\n\nAt Microsoft, we make every product decision based on data. Learn how to conduct user research, analyze metrics, run A/B tests, and make informed product choices. Discover frameworks for prioritizing features and measuring impact.',
         image: 'https://via.placeholder.com/400x250?text=Product+Strategy',
@@ -326,18 +414,18 @@ async function seedDatabase() {
     console.log('\n💬 Seeding Answers by Alumni...');
     // Get first 2 questions to add answers
     const createdQuestions = await Question.find().limit(2);
-    
+
     if (createdQuestions && createdQuestions.length > 0) {
       const answers = [
         {
           questionId: createdQuestions[0]._id,
-          authorId: userMap['Rahul Desai'],
+          authorId: userMap['Vikram Malhotra'],
           content: 'Use React.memo() to memoize components, useMemo() and useCallback() hooks to memoize values and functions, and code splitting for lazy loading. These techniques significantly improve rendering performance in large apps.',
           upvotes: [],
         },
         {
           questionId: createdQuestions[1]._id,
-          authorId: userMap['Divya Patel'],
+          authorId: userMap['Sanya Gupta'],
           content: 'It depends on your use case. REST is simpler and great for straightforward CRUD APIs. GraphQL excels with complex queries, multiple data sources, and when you need precise data requirements. GraphQL has more setup overhead.',
           upvotes: [],
         },
@@ -353,7 +441,7 @@ async function seedDatabase() {
     console.log('\n📅 Seeding Events...');
     const events = [
       {
-        organizerId: userMap['Rahul Desai'],
+        organizerId: userMap['Vikram Malhotra'],
         title: 'Web Development Masterclass Workshop',
         description: 'Learn modern web development with React, Node.js, and MongoDB from industry experts at Google',
         date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
@@ -363,7 +451,7 @@ async function seedDatabase() {
         maxAttendees: 150,
       },
       {
-        organizerId: userMap['Divya Patel'],
+        organizerId: userMap['Sanya Gupta'],
         title: 'AI & Machine Learning Bootcamp',
         description: 'Deep dive into ML, Deep Learning, NLP and Computer Vision with hands-on projects using Python',
         date: new Date(Date.now() + 45 * 24 * 60 * 60 * 1000),
@@ -373,7 +461,7 @@ async function seedDatabase() {
         maxAttendees: 100,
       },
       {
-        organizerId: userMap['Vikram Sharma'],
+        organizerId: userMap['Deepak Verma'],
         title: 'Startup Masterclass & Pitch Competition',
         description: 'Learn from successful founders how to build and scale startups. Includes live pitch competition with prizes',
         date: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000),
@@ -389,45 +477,55 @@ async function seedDatabase() {
       console.log(`   ✓ ${event.title}`);
     }
 
-    // ==================== SEED CHALLENGES ====================
-    console.log('\n🎯 Seeding Coding Challenges...');
-    const challenges = [
+    // ==================== SEED REVERSE PITCHES (Challenges) ====================
+    console.log('\n🎯 Seeding Reverse Pitches (Challenges)...');
+    const industries = ['Fintech', 'HealthTech', 'EdTech', 'AgriTech', 'CleanTech', 'E-commerce', 'SaaS', 'AI/ML'];
+    const reversePitches = [
       {
-        authorId: userMap['Rahul Desai'],
-        title: 'Build a Real-time Chat Application',
-        description: 'Create a chat app using WebSockets, Node.js, and React with user authentication and message persistence',
-        prize: '₹5,000 + Certificate',
+        authorId: userMap['Vikram Malhotra'],
+        title: 'Optimize Last-Mile Delivery Routes',
+        description: 'We are looking for an algorithm or prototype to optimize delivery routes for our logistics fleet in tier-2 cities, considering traffic and road conditions.',
+        industry: 'Logistics',
+        budget: '₹50,000 Prize',
+        deadline: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000),
+        submissions: [],
+      },
+      {
+        authorId: userMap['Deepak Verma'],
+        title: 'AI-Driven Customer Support Bot for Regional Languages',
+        description: 'Build a chatbot that can handle customer queries in Hindi, Gujarati, and Marathi with >90% accuracy using NLP.',
+        industry: 'AI/ML',
+        budget: '₹1 Lakh + Internship',
         deadline: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
         submissions: [],
       },
-      {
-        authorId: userMap['Priya Sharma'],
-        title: 'Full-Stack Task Management System',
-        description: 'Build a complete task management app with filtering, sorting, and persistent storage using MongoDB',
-        prize: '₹4,000 + Certificate',
-        deadline: new Date(Date.now() + 75 * 24 * 60 * 60 * 1000),
+      // Generate 10 more random pitches
+      ...Array.from({ length: 12 }).map((_, i) => ({
+        authorId: Object.values(userMap)[Math.floor(Math.random() * Object.values(userMap).length)],
+        title: `Innovation Challenge #${i + 1}: ${industries[i % industries.length]} Solution`,
+        description: `We are seeking innovative solutions to revolutionize the ${industries[i % industries.length]} sector. Propose a scalable architecture.`,
+        industry: industries[i % industries.length],
+        budget: `₹${(i + 1) * 10},000 Grant`,
+        deadline: new Date(Date.now() + (30 + i * 5) * 24 * 60 * 60 * 1000),
         submissions: [],
-      },
-      {
-        authorId: userMap['Divya Patel'],
-        title: 'ML Classification with Real-world Dataset',
-        description: 'Build an ML classifier to predict outcomes on a real-world dataset with >95% accuracy',
-        prize: '₹6,000 + Certificate',
-        deadline: new Date(Date.now() + 120 * 24 * 60 * 60 * 1000),
-        submissions: [],
-      },
+      }))
     ];
 
-    for (const challenge of challenges) {
-      await Challenge.create(challenge);
-      console.log(`   ✓ ${challenge.title}`);
+    for (const pitch of reversePitches) {
+      await ReversePitch.create(pitch);
+      console.log(`   ✓ ${pitch.title}`);
     }
 
-    // ==================== SEED INTERNSHIPS ====================
+    // ==================== SEED INTERNSHIPS (Opportunities) ====================
     console.log('\n💼 Seeding Internship Opportunities...');
-    const internships = [
+    const jobRoles = ['Frontend Dev', 'Backend Dev', 'Data Analyst', 'UI Designer', 'Product Intern', 'Marketing Associate'];
+    const jobTypes = ['Internship', 'Job', 'Freelance', 'Part-time', 'Remote-Friendly'];
+    const companies = ['Google', 'Microsoft', 'Amazon', 'Zomato', 'Swiggy', 'Cred', 'Razorpay', 'Freshworks'];
+
+    // Core manual internships
+    const manualInternships = [
       {
-        postedById: userMap['Rahul Desai'],
+        postedById: userMap['Vikram Malhotra'],
         title: 'Full Stack Developer Internship',
         company: 'Google India',
         stipend: '₹50,000/month',
@@ -437,74 +535,128 @@ async function seedDatabase() {
         description: 'Work on real products used by millions of users worldwide at Google. Build scalable systems and learn industry best practices.',
         applicants: [],
       },
-      {
-        postedById: userMap['Divya Patel'],
-        title: 'Data Science Internship',
-        company: 'Amazon',
-        stipend: '₹60,000/month',
-        type: 'Hybrid',
-        location: 'Bangalore',
-        skills: ['Python', 'Machine Learning', 'SQL', 'Statistics'],
-        description: 'Build ML models for recommendation engines and analytics. Work with massive datasets at Amazon scale.',
-        applicants: [],
-      },
+      // ... keep existing manual ones if desired, but adding generator below
     ];
 
-    for (const internship of internships) {
+    // Generate 25 Opportunities
+    const generatedInternships = Array.from({ length: 25 }).map((_, i) => {
+      const role = jobRoles[Math.floor(Math.random() * jobRoles.length)];
+      const company = companies[Math.floor(Math.random() * companies.length)];
+      return {
+        postedById: Object.values(userMap)[Math.floor(Math.random() * Object.values(userMap).length)],
+        title: `${role} ${i % 2 === 0 ? 'Role' : 'Opening'}`,
+        company: company,
+        stipend: i % 3 === 0 ? '₹15-25k/month' : 'Competitive',
+        type: jobTypes[Math.floor(Math.random() * jobTypes.length)],
+        location: ['Bangalore', 'Remote', 'Mumbai', 'Delhi', 'Ahmedabad'][Math.floor(Math.random() * 5)],
+        skills: ['React', 'Node.js', 'Python'].sort(() => 0.5 - Math.random()).slice(0, 2),
+        description: `Join ${company} as a ${role}. We are looking for passionate individuals to join our fast-paced team.`,
+        applicants: [],
+      };
+    });
+
+    const allInternships = [...manualInternships, ...generatedInternships];
+
+    for (const internship of allInternships) {
       await Internship.create(internship);
-      console.log(`   ✓ ${internship.title} at ${internship.company}`);
+      // console.log(`   ✓ ${internship.title}`); // reduce noise
     }
+    console.log(`   ✓ Seeded ${allInternships.length} opportunities`);
 
     // ==================== SEED STARTUPS ====================
     console.log('\n🚀 Seeding Startup Ideas...');
-    const startups = [
-      {
-        ownerId: userMap['Kashish Kumar'],
-        title: 'EduTech Pro - AI Learning Platform',
-        tagline: 'Personalized learning powered by AI for students',
-        stage: 'mvp',
-        problem: 'Traditional education doesn\'t adapt to individual learning styles',
-        solution: 'AI-powered platform that personalizes content based on student performance',
-        progress: 'MVP ready with 1000+ users in beta',
-        fundingNeeded: '₹50 Lakhs for Series A',
-        attachments: [],
-        likes: [],
-        comments: [],
-      },
-      {
-        ownerId: userMap['Priya Sharma'],
-        title: 'DataInsight Analytics - B2B Analytics',
-        tagline: 'Real-time business intelligence for every company',
-        stage: 'prototype',
-        problem: 'Businesses lack real-time insights into operations',
-        solution: 'SaaS platform that provides real-time analytics and dashboards',
-        progress: 'Prototype built, looking for beta customers',
-        fundingNeeded: '₹25 Lakhs for product development',
-        attachments: [],
-        likes: [],
-        comments: [],
-      },
-      {
-        ownerId: userMap['Neha Verma'],
-        title: 'SmartHome IoT Hub - Open Source IoT',
-        tagline: 'Open-source IoT platform for smart home automation',
-        stage: 'prototype',
-        problem: 'Smart home solutions are expensive and proprietary',
-        solution: 'Open-source IoT platform that\'s affordable and extensible',
-        progress: 'Core platform developed, 500+ GitHub stars',
-        fundingNeeded: '₹30 Lakhs for hardware development',
-        attachments: [],
-        likes: [],
-        comments: [],
-      },
-    ];
+    const generatedStartups = Array.from({ length: 15 }).map((_, i) => ({
+      ownerId: Object.values(userMap)[Math.floor(Math.random() * Object.values(userMap).length)],
+      title: `Startup Project Alpha-${i}`,
+      tagline: `Disrupting the ${industries[i % industries.length]} industry`,
+      stage: ['concept', 'prototype', 'mvp'][Math.floor(Math.random() * 3)],
+      problem: 'Solving a critical pain point in the market.',
+      solution: 'An innovative AI-driven solution.',
+      progress: 'Early traction achieved.',
+      fundingNeeded: `₹${(i + 5) * 5} Lakhs`,
+      attachments: [],
+      likes: [],
+      comments: [],
+    }));
 
-    for (const startup of startups) {
+    for (const startup of generatedStartups) {
       await Startup.create(startup);
-      console.log(`   ✓ ${startup.title}`);
     }
+    console.log(`   ✓ Seeded ${generatedStartups.length} startups`);
 
-    // ==================== COMPLETION SUMMARY ====================
+    // ... (Keep Connections, Search History etc.)
+
+    // ==================== SEED CONNECTIONS (Social Graph) ====================
+    console.log('\n🔗 Seeding Connections (Followers/Following)...');
+    const allUserIds = Object.values(userMap);
+
+    // Create random connections
+    for (const userId of allUserIds) {
+      // Connect to 2-4 random other users
+      const numConnections = Math.floor(Math.random() * 3) + 2;
+      const others = allUserIds.filter(id => id !== userId);
+      const randomTargets = others.sort(() => 0.5 - Math.random()).slice(0, numConnections);
+
+      for (const targetId of randomTargets) {
+        await Connection.create({
+          followerId: userId,
+          followingId: targetId
+        });
+      }
+    }
+    console.log(`   ✓ Created random social graph`);
+
+    // ==================== SEED SEARCH HISTORY ====================
+    console.log('\n🔍 Seeding Search History...');
+    const searchTerms = ['React', 'Data Science', 'Google', 'Startup', 'Internship', 'Machine Learning'];
+    for (const userId of allUserIds) {
+      // 3 random searches per user
+      for (let i = 0; i < 3; i++) {
+        await SearchHistory.create({
+          userId,
+          query: searchTerms[Math.floor(Math.random() * searchTerms.length)],
+          searchedType: 'keyword'
+        });
+      }
+    }
+    console.log(`   ✓ Created search history`);
+
+    // ==================== SEED NOTIFICATIONS ====================
+    console.log('\n🔔 Seeding Notifications...');
+    // Add notifications for Students
+    const studentIds = Object.keys(userMap)
+      .filter(name => studentUsers.some(s => s.name === name))
+      .map(name => userMap[name]);
+
+    for (const studentId of studentIds) {
+      // 1. Internship Alert
+      await Notification.create({
+        userId: studentId,
+        type: 'internship',
+        referenceId: new mongoose.Types.ObjectId(), // dummy ref
+        message: 'New Internship matching your skills: Full Stack Developer at Google',
+        isRead: false
+      });
+
+      // 2. Post Alert
+      await Notification.create({
+        userId: studentId,
+        type: 'post',
+        referenceId: new mongoose.Types.ObjectId(), // dummy ref
+        message: 'New post by Rahul Desai: Building Scalable Systems',
+        isRead: false
+      });
+
+      // 3. Connection
+      await Notification.create({
+        userId: studentId,
+        type: 'connection',
+        referenceId: new mongoose.Types.ObjectId(), // dummy ref
+        message: 'Vikram Sharma started following you',
+        isRead: true // one read
+      });
+    }
+    console.log(`   ✓ Created notifications for students`);
     console.log('\n✅ DATABASE SEEDING COMPLETED!\n');
     console.log('📊 Summary:');
     console.log(`   👥 Users: ${studentUsers.length} Students + ${alumniUsers.length} Alumni = ${studentUsers.length + alumniUsers.length} total`);
@@ -512,9 +664,9 @@ async function seedDatabase() {
     console.log(`   ❓ Questions: ${questions.length} (by Students)`);
     console.log(`   💬 Answers: ${2} (by Alumni)`);
     console.log(`   📅 Events: ${events.length}`);
-    console.log(`   🎯 Challenges: ${challenges.length}`);
-    console.log(`   💼 Internships: ${internships.length}`);
-    console.log(`   🚀 Startups: ${startups.length}`);
+    console.log(`   🎯 Reverse Pitches: ${reversePitches.length}`);
+    console.log(`   💼 Internships: ${allInternships.length}`);
+    console.log(`   🚀 Startups: ${generatedStartups.length}`);
     console.log('\n🎨 All realistic interconnected data is now in MongoDB!');
     console.log('👁️  Check MongoDB Compass to see all collections populated\n');
 

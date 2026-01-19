@@ -3,6 +3,7 @@ import { Outlet, useNavigate } from 'react-router-dom';
 import Sidebar from '../components/layout/Sidebar';
 import Header from '../components/layout/Header';
 import Chat from '../components/chat/Chat';
+import NotificationPopup from '../components/notifications/NotificationPopup';
 
 const MainLayout: React.FC = () => {
   const navigate = useNavigate();
@@ -33,7 +34,7 @@ const MainLayout: React.FC = () => {
       if (ce.detail.search && page === 'alumni') {
         try {
           localStorage.setItem('directorySearch', ce.detail.search);
-        } catch {}
+        } catch { }
       }
 
       navigate(map[page] || '/dashboard');
@@ -61,6 +62,7 @@ const MainLayout: React.FC = () => {
       </div>
 
       <div className="relative z-10 flex h-full">
+        <NotificationPopup />
         <Sidebar />
 
         <div className="flex-1 flex min-w-0">

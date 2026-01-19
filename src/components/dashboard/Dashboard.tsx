@@ -3,6 +3,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useApp } from '../../contexts/AppContext';
 import ActivityFeed from '../activity/ActivityFeed';
 import AlumniActivityMonitor from '../activity/AlumniActivityMonitor';
+import RecommendationList from '../recommendations/RecommendationList';
 import {
   TrendingUp,
   Users,
@@ -21,6 +22,7 @@ const Dashboard: React.FC = () => {
   const { user } = useAuth();
   const { posts, events, users } = useApp();
 
+  // ... (keep existing stats logic) ...
   // Get recent job opportunities for students
   const recentOpportunities = posts
     .filter(p => p.type === 'job')
@@ -120,6 +122,9 @@ const Dashboard: React.FC = () => {
           </button>
         </div>
       </div>
+
+      {/* Recommended Alumni - New Feature */}
+      <RecommendationList />
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -243,10 +248,10 @@ const Dashboard: React.FC = () => {
                       </div>
                     </div>
                     <span className={`px-3 py-1 rounded-full text-xs font-medium ${typeLabel.toLowerCase().includes('intern')
-                        ? 'bg-amber-100 text-amber-700'
-                        : typeLabel.toLowerCase().includes('freelance')
-                          ? 'bg-fuchsia-100 text-fuchsia-700'
-                          : 'bg-emerald-100 text-emerald-700'
+                      ? 'bg-amber-100 text-amber-700'
+                      : typeLabel.toLowerCase().includes('freelance')
+                        ? 'bg-fuchsia-100 text-fuchsia-700'
+                        : 'bg-emerald-100 text-emerald-700'
                       }`}>
                       {typeLabel}
                     </span>

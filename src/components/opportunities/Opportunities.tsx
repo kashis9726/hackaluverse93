@@ -1,14 +1,15 @@
 import React, { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useApp } from '../../contexts/AppContext';
-import { Briefcase, MapPin, Filter, Search } from 'lucide-react';
-import { getIllustrationFor } from '../../utils/imageProvider';
+import { Briefcase, MapPin, Search } from 'lucide-react';
 
 const Opportunities: React.FC = () => {
   const { user } = useAuth();
-  const { posts, addPost, users, updateUserPoints, getChatRoom } = useApp();
+  const navigate = useNavigate();
+  const { internships, updateUserPoints, getChatRoom } = useApp();
 
-  // Create-only UI state
+  // Create-only UI state (omitted for brevity, keep existing)
   const [showCreate, setShowCreate] = useState(false);
   const [form, setForm] = useState({
     title: '',
@@ -24,12 +25,11 @@ const Opportunities: React.FC = () => {
   const [q, setQ] = useState('');
   const [kind, setKind] = useState<'All' | 'Job' | 'Internship' | 'Freelance' | 'Part-time'>('All');
 
-  const jobPosts = useMemo(() => {
-    return posts
-      .filter(p => p.type === 'job')
-      .filter(p => (kind === 'All' ? true : (p.content.toLowerCase().includes(kind.toLowerCase()))))
-      .filter(p => (q ? (p.content + ' ' + (p.author?.name || '')).toLowerCase().includes(q.toLowerCase()) : true));
-  }, [posts, q, kind]);
+  const filteredInternships = useMemo(() => {
+    return internships
+      .filter(p => (kind === 'All' ? true : p.type === kind)) // Type match
+      .filter(p => (q ? (p.title + ' ' + (p.company || '')).toLowerCase().includes(q.toLowerCase()) : true));
+  }, [internships, q, kind]);
 
   const timeAgo = (d: Date | string) => {
     const diff = Date.now() - new Date(d).getTime();
@@ -41,39 +41,15 @@ const Opportunities: React.FC = () => {
     return `${days} day${days > 1 ? 's' : ''} ago`;
   };
 
-  const submit = async () => {
-    if (!user) return;
-    const author = users.find(u => u.id === user.id) || user;
-    const content = [
-      form.title ? `${form.title}` : '',
-      form.company ? `@ ${form.company}` : '',
-      form.location ? ` • ${form.location}` : '',
-      form.type ? ` • ${form.type}` : '',
-      form.stipend ? `\nStipend: ${form.stipend}` : '',
-      form.skills ? `\nSkills: ${form.skills}` : '',
-      form.description ? `\n\n${form.description}` : ''
-    ].join('');
-
-    // Try to fetch an illustration via proxy/Gemini or Unsplash fallback
-    const image = await getIllustrationFor(`${form.title} ${form.company}`);
-
-    addPost({
-      authorId: user.id,
-      author,
-      content,
-      likes: [],
-      comments: [],
-      type: 'job',
-      image,
-    });
-    updateUserPoints(user.id, 20);
+  // Placeholder submit function
+  const submit = () => {
+    alert("Posting is currently disabled in this demo view.");
     setShowCreate(false);
-    setForm({ title: '', company: '', location: '', stipend: '', type: 'Internship', skills: '', description: '' });
   };
 
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {/* Header & Toolbar (Reuse existing JSX) */}
       <div className="sticky top-16 z-20 bg-white/80 backdrop-blur rounded-2xl p-6 shadow-elev-1 border border-white/50">
         <div className="flex items-center justify-between">
           <div>
@@ -93,7 +69,6 @@ const Opportunities: React.FC = () => {
         </div>
       </div>
 
-      {/* Toolbar */}
       <div className="bg-white/80 backdrop-blur rounded-2xl p-4 shadow-elev-1 border border-white/50">
         <div className="flex flex-col md:flex-row gap-3 md:items-center">
           <div className="inline-flex bg-gray-100 rounded-lg p-1 w-full md:w-auto">
@@ -112,58 +87,44 @@ const Opportunities: React.FC = () => {
             <input
               value={q}
               onChange={e => setQ(e.target.value)}
-              placeholder="Search title, company or author..."
+              placeholder="Search title, company..."
               className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
             />
           </div>
-          <button className="px-3 py-2 inline-flex items-center border rounded-lg text-gray-700 hover:bg-gray-50">
-            <Filter className="h-4 w-4 mr-2" /> More Filters
-          </button>
         </div>
       </div>
 
       {/* Cards */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {jobPosts.map((p) => {
-          const lines = p.content.split('\n');
-          const header = lines[0] || '';
-          const typeMatch = header.match(/•\s*(\w+)/);
-          const typeLabel = typeMatch ? typeMatch[1] : 'Open';
-          const stipendLine = lines.find(l => /Stipend:|Budget:/i.test(l));
-          const stipend = stipendLine ? stipendLine.replace(/^(Stipend:|Budget:)\s*/i, '') : undefined;
-          const locationLine = lines.find(l => /Location:/i.test(l));
-          const location = locationLine ? locationLine.replace(/^Location:\s*/i, '') : undefined;
-          const skillsLine = lines.find(l => /Skills:/i.test(l));
-          const skills = skillsLine ? skillsLine.replace(/^Skills:\s*/i, '').split(/,\s*/).filter(Boolean) : [];
-          const description = lines.filter(l => !/^Stipend:|^Location:|^Skills:/i.test(l)).slice(1).join('\n');
+        {filteredInternships.map((p) => {
+          // Direct mapping from Internship interface
+          const typeLabel = p.type || 'Internship';
           return (
             <div key={p.id} className="rounded-2xl border border-white/50 bg-white/90 backdrop-blur shadow-elev-1 hover:shadow-elev-2 transition overflow-hidden">
-              {p.image && (
-                <img src={p.image as any} alt="cover" className="w-full h-40 object-cover" />
-              )}
+              {/* Image removed or use generic placeholder */}
               <div className="p-6">
                 <div className="flex items-start justify-between">
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-1">{header.replace(/\s•\s*\w+$/, '')}</h3>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-1">{p.title}</h3>
                     <div className="flex items-center gap-2 text-sm text-gray-600">
                       <Briefcase className="h-4 w-4" />
-                      <span>{p.author?.name || 'Unknown'}</span>
-                      {location && (<><span>•</span><span>{location}</span></>)}
+                      <span>{p.company}</span>
+                      {p.location && (<><span>•</span><span>{p.location}</span></>)}
                       <span>•</span>
-                      <span>{timeAgo(p.createdAt as any)}</span>
+                      <span>{timeAgo(p.createdAt)}</span>
                     </div>
                   </div>
                   <span className={`px-3 py-1 rounded-full text-sm ${typeLabel.toLowerCase().includes('intern') ? 'bg-amber-100 text-amber-700' : typeLabel.toLowerCase().includes('freelance') ? 'bg-fuchsia-100 text-fuchsia-700' : 'bg-emerald-100 text-emerald-700'}`}>{typeLabel}</span>
                 </div>
 
                 <div className="mt-3 space-y-2 text-sm text-gray-700 whitespace-pre-line">
-                  <div>{description}</div>
+                  <div>{p.description}</div>
                 </div>
 
-                {skills.length > 0 && (
+                {p.skills && p.skills.length > 0 && (
                   <div className="mt-3 flex flex-wrap gap-2">
                     <span className="text-sm font-semibold text-gray-700">Skills:</span>
-                    {skills.map((s, i) => (
+                    {p.skills.map((s: string, i: number) => (
                       <span key={i} className="px-2 py-1 rounded-full text-xs bg-blue-50 text-blue-700 border border-blue-100">{s}</span>
                     ))}
                   </div>
@@ -172,20 +133,26 @@ const Opportunities: React.FC = () => {
                 <div className="mt-4 flex items-center justify-between border-t pt-4">
                   <div className="flex items-center gap-3 text-gray-600 text-sm">
                     <MapPin className="h-4 w-4" />
-                    <span>{location || 'Location as per post'}</span>
-                    {stipend && (
+                    <span>{p.location || 'Remote-Friendly'}</span>
+                    {p.stipend && (
                       <>
-                        <span className="ml-3 text-emerald-600 font-semibold">{stipend}</span>
+                        <span className="ml-3 text-emerald-600 font-semibold">{p.stipend}</span>
                       </>
                     )}
                   </div>
                   <button
+                    onClick={() => navigate(`/alumni/${p.postedById}`)}
+                    className="px-3 py-2 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 text-sm font-medium"
+                  >
+                    View Poster
+                  </button>
+                  <button
                     onClick={() => {
                       if (!user) return alert('Please login to apply.');
-                      getChatRoom([user.id, p.authorId]);
+                      getChatRoom([user.id, p.postedById]);
                       // Reward both applicant and alumni poster
                       updateUserPoints(user.id, 5);
-                      updateUserPoints(p.authorId, 5);
+                      updateUserPoints(p.postedById, 5);
                       alert('Chat started with the poster. Open chat from the top bar to message now.');
                     }}
                     className="px-4 py-2 rounded-lg border bg-white hover:bg-gray-50 text-gray-800 shadow-sm"

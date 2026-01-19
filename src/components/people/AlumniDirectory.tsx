@@ -3,7 +3,10 @@ import { useApp } from '../../contexts/AppContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { Search, MessageSquare, Building2, GraduationCap, Award } from 'lucide-react';
 
+import { useNavigate } from 'react-router-dom';
+
 const AlumniDirectory: React.FC = () => {
+  const navigate = useNavigate();
   const { users, getChatRoom } = useApp();
   const { user } = useAuth();
   const [q, setQ] = useState('');
@@ -17,7 +20,7 @@ const AlumniDirectory: React.FC = () => {
         setQ(preset);
         localStorage.removeItem('directorySearch');
       }
-    } catch {}
+    } catch { }
   }, []);
 
   const departments = useMemo(() => {
@@ -30,7 +33,7 @@ const AlumniDirectory: React.FC = () => {
     return users
       .filter(u => u.role === 'alumni')
       .filter(u => dept === 'All' ? true : u.department === dept)
-      .filter(u => q ? (u.name + ' ' + (u.company||'') + ' ' + (u.department||'') + ' ' + (u.skills||[]).join(' ')).toLowerCase().includes(q.toLowerCase()) : true);
+      .filter(u => q ? (u.name + ' ' + (u.company || '') + ' ' + (u.department || '') + ' ' + (u.skills || []).join(' ')).toLowerCase().includes(q.toLowerCase()) : true);
   }, [users, q, dept]);
 
   return (
@@ -47,9 +50,9 @@ const AlumniDirectory: React.FC = () => {
         <div className="flex items-center gap-2">
           <div className="flex-1 relative">
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
-            <input value={q} onChange={(e)=>setQ(e.target.value)} placeholder="Search name, company, skills..." className="w-full pl-8 pr-3 py-1.5 text-sm rounded-md border border-gray-300 focus:ring-1.5 focus:ring-emerald-500 focus:border-transparent"/>
+            <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search name, company, skills..." className="w-full pl-8 pr-3 py-1.5 text-sm rounded-md border border-gray-300 focus:ring-1.5 focus:ring-emerald-500 focus:border-transparent" />
           </div>
-          <select value={dept} onChange={(e)=>setDept(e.target.value)} className="px-2.5 py-1.5 text-sm rounded-md border border-gray-300 focus:ring-1.5 focus:ring-emerald-500 focus:border-transparent">
+          <select value={dept} onChange={(e) => setDept(e.target.value)} className="px-2.5 py-1.5 text-sm rounded-md border border-gray-300 focus:ring-1.5 focus:ring-emerald-500 focus:border-transparent">
             {departments.map(d => <option key={d} value={d}>{d === 'All' ? 'Dept' : d.slice(0, 10)}</option>)}
           </select>
         </div>
@@ -61,7 +64,7 @@ const AlumniDirectory: React.FC = () => {
           <div key={a.id} className="rounded-2xl border border-white/50 bg-white/90 backdrop-blur shadow-elev-1 hover:shadow-elev-2 transition overflow-hidden">
             <div className="p-6 flex items-start gap-4">
               <div className="w-14 h-14 rounded-full overflow-hidden bg-purple-100 flex items-center justify-center text-purple-700 font-semibold">
-                {a.profileImage ? <img src={a.profileImage} alt={a.name} className="w-full h-full object-cover"/> : a.name.charAt(0)}
+                {a.profileImage ? <img src={a.profileImage} alt={a.name} className="w-full h-full object-cover" /> : a.name.charAt(0)}
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between">
@@ -69,33 +72,39 @@ const AlumniDirectory: React.FC = () => {
                   {a.isVerified && <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">Verified</span>}
                 </div>
                 <div className="mt-1 text-sm text-gray-600 flex items-center gap-3 flex-wrap">
-                  {a.company && <span className="inline-flex items-center gap-1"><Building2 className="h-3.5 w-3.5"/>{a.company}</span>}
-                  {a.department && <span className="inline-flex items-center gap-1"><GraduationCap className="h-3.5 w-3.5"/>{a.department}</span>}
+                  {a.company && <span className="inline-flex items-center gap-1"><Building2 className="h-3.5 w-3.5" />{a.company}</span>}
+                  {a.department && <span className="inline-flex items-center gap-1"><GraduationCap className="h-3.5 w-3.5" />{a.department}</span>}
                 </div>
-                {a.skills && a.skills.length>0 && (
+                {a.skills && a.skills.length > 0 && (
                   <div className="mt-2 flex flex-wrap gap-2">
-                    {a.skills.slice(0,5).map((s, i) => (
+                    {a.skills.slice(0, 5).map((s, i) => (
                       <span key={i} className="px-2 py-1 rounded-full text-xs bg-indigo-50 text-indigo-700 border border-indigo-100">{s}</span>
                     ))}
                   </div>
                 )}
-                {a.badges && a.badges.length>0 && (
+                {a.badges && a.badges.length > 0 && (
                   <div className="mt-2 flex flex-wrap gap-1 text-sm text-purple-700">
-                    {a.badges.slice(0,3).map((b, i) => <span key={i} className="text-xs"><Award className="inline h-3 w-3 mr-1 text-purple-500"/>{b}</span>)}
+                    {a.badges.slice(0, 3).map((b, i) => <span key={i} className="text-xs"><Award className="inline h-3 w-3 mr-1 text-purple-500" />{b}</span>)}
                   </div>
                 )}
               </div>
             </div>
-            <div className="px-6 pb-4 flex justify-end">
+            <div className="px-6 pb-6 flex gap-3">
+              <button
+                onClick={() => navigate(`/alumni/${a.id}`)}
+                className="flex-1 px-4 py-2 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 flex items-center justify-center gap-2 font-medium"
+              >
+                View Profile
+              </button>
               <button
                 onClick={() => {
                   if (!user) return alert('Please login first.');
                   getChatRoom([user.id, a.id]);
                   alert('Chat started. Open the messages from the top bar to talk.');
                 }}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-btn-gradient text-white shadow-elev-1 hover:opacity-95"
+                className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-btn-gradient text-white shadow-elev-1 hover:opacity-95 font-medium"
               >
-                <MessageSquare className="h-4 w-4"/> Connect
+                <MessageSquare className="h-4 w-4" /> Connect
               </button>
             </div>
           </div>

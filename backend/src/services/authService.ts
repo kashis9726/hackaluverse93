@@ -73,22 +73,22 @@ export class AuthService {
       throw new Error(ERROR_MESSAGES.DB_NOT_CONNECTED);
     }
 
-    const user = role ? 
-      await User.findOne({ email, role }) : 
+    const user = role ?
+      await User.findOne({ email, role }) :
       await User.findOne({ email });
 
     if (!user) {
-      log('[AUTH] login', `User not found: ${email}`);
+      console.log(`[AUTH] login: User not found: ${email}`);
       throw new Error(ERROR_MESSAGES.INVALID_CREDENTIALS);
     }
 
     if (!user.passwordHash) {
-      log('[AUTH] login', `User has no password hash: ${email}`);
+      console.log(`[AUTH] login: User has no password hash: ${email}`);
       throw new Error(ERROR_MESSAGES.INVALID_CREDENTIALS);
     }
 
     if (!verifyPassword(password, user.passwordHash)) {
-      log('[AUTH] login', `Password mismatch for user: ${email}`);
+      console.log(`[AUTH] login: Password mismatch for user: ${email}`);
       throw new Error(ERROR_MESSAGES.INVALID_CREDENTIALS);
     }
     if (user.role === 'admin') {

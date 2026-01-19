@@ -37,9 +37,15 @@ router.post('/', requireAuth, requireProfileCompleted, requireRole(['alumni', 'a
     ...(description ? { description } : {}),
   });
 
+  // TRIGGER NOTIFICATION
+  import('../services/notificationService').then(service => {
+    service.createInternshipNotification(created).catch(err => console.error('Notification trigger failed', err));
+  });
+
   const populated = await Internship.findById(created._id).populate('postedById');
   return res.status(201).json(populated || created);
 });
+
 
 // Students apply (UI: students participate)
 router.post('/:id/apply', requireAuth, requireProfileCompleted, requireRole(['student']), async (req: AuthRequest, res) => {

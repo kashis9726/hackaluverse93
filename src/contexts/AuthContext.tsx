@@ -26,7 +26,8 @@ interface AuthProviderProps {
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const API_BASE = 'http://localhost:4000/api';
+  const API_BASE = '/api';
+  const REQUEST_TIMEOUT_MS = 10000;
 
   const normalizeUser = (u: User): User => {
     return {
@@ -58,12 +59,27 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       ...(init?.headers ? (init.headers as any) : {}),
     };
     if (token) headers.Authorization = `Bearer ${token}`;
-    return fetch(path, { ...init, headers });
+
+    const url = path.startsWith('http')
+      ? path
+      : `${API_BASE}${path.startsWith('/') ? path : `/${path}`}`;
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+    if (init?.signal) {
+      init.signal.addEventListener('abort', () => controller.abort(), { once: true });
+    }
+
+    try {
+      return await fetch(url, { ...init, headers, signal: controller.signal });
+    } finally {
+      clearTimeout(timeoutId);
+    }
   };
 
   const adminLogin = async (email: string): Promise<boolean> => {
     try {
-      const res = await apiFetch(`${API_BASE}/auth/admin-login`, {
+      const res = await apiFetch('/auth/admin-login', {
         method: 'POST',
         body: JSON.stringify({ email }),
       });
@@ -96,7 +112,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         const token = getToken();
         if (!token) return;
 
-        const res = await apiFetch(`${API_BASE}/auth/me`);
+        const res = await apiFetch('/auth/me');
         if (!res.ok) {
           setToken(null);
           setUser(null);
@@ -118,7 +134,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
-      const res = await apiFetch(`${API_BASE}/auth/login`, {
+      const res = await apiFetch('/auth/login', {
         method: 'POST',
         body: JSON.stringify({ email, password }),
       });
@@ -146,7 +162,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const signup = async (userData: Partial<User> & { email: string; password: string }): Promise<boolean> => {
     try {
       const role = (userData.role || 'student') as User['role'];
-      const res = await apiFetch(`${API_BASE}/auth/signup`, {
+      const res = await apiFetch('/auth/signup', {
         method: 'POST',
         body: JSON.stringify({
           name: userData.name,

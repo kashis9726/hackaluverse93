@@ -144,6 +144,7 @@ const AppRouter: React.FC = () => {
           <Route path="/qa" element={<QABoard />} />
           <Route path="/challenges" element={<ReversePitching />} />
           <Route path="/alumni" element={<AlumniDirectory />} />
+          <Route path="/alumni/:id" element={<AlumniProfile />} />
           <Route path="/mentorship" element={<FindMentors />} />
           <Route path="/profile" element={<Profile />} />
 

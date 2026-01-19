@@ -1,0 +1,5 @@
+✅ Connection FOUND:
+ID: 696e730dfdfa8b81ccef0cfa
+Status: undefined
+Follower: 696e6b40a3eacdff0c628c25
+Following: 696e6b40a3eacdff0c628c23

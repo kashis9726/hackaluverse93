@@ -9,6 +9,8 @@ interface AppContextType {
   questions: Question[];
   chatRooms: ChatRoom[];
   users: User[];
+  internships: any[]; // User proper type Internship[]
+  challenges: any[]; // Use proper type Challenge[]
   addPost: (post: Omit<Post, 'id' | 'createdAt'>) => void;
   addStartup: (startup: Omit<Startup, 'id' | 'createdAt'>) => void;
   addReversePitch: (pitch: Omit<ReversePitch, 'id' | 'createdAt'>) => void;
@@ -47,8 +49,31 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [chatRooms, setChatRooms] = useState<ChatRoom[]>([]);
   const [users, setUsers] = useState<User[]>([]);
+  const [internships, setInternships] = useState<any[]>([]); // Using any temporarily or defined type if imported
+  const [challenges, setChallenges] = useState<any[]>([]);
 
-  const API_BASE = 'http://localhost:4000/api';
+  const API_BASE = '/api';
+  const REQUEST_TIMEOUT_MS = 10000;
+
+  const fetchWithTimeout = async (url: string, init?: RequestInit) => {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+    if (init?.signal) {
+      init.signal.addEventListener('abort', () => controller.abort(), { once: true });
+    }
+    try {
+      const token = localStorage.getItem('authToken');
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+        ...(init?.headers ? (init.headers as any) : {}),
+      };
+      if (token) headers.Authorization = `Bearer ${token}`;
+
+      return await fetch(url, { ...init, headers, signal: controller.signal });
+    } finally {
+      clearTimeout(timeoutId);
+    }
+  };
 
   // Fetch ALL REAL data from MongoDB backend - NO demo data whatsoever
   useEffect(() => {
@@ -57,7 +82,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
         console.log('🔄 Fetching REAL database data from MongoDB...');
 
         // Fetch blogs
-        const blogsRes = await fetch(`${API_BASE}/blogs`);
+        const blogsRes = await fetchWithTimeout(`${API_BASE}/blogs`);
         if (blogsRes?.ok) {
           const blogs = await blogsRes.json();
           setPosts(blogs as Post[]);
@@ -66,7 +91,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
 
         // Fetch users (requires auth, so may fail if not logged in)
         try {
-          const usersRes = await fetch(`${API_BASE}/users`);
+          const usersRes = await fetchWithTimeout(`${API_BASE}/users`);
           if (usersRes?.ok) {
             const usersData = await usersRes.json();
             setUsers(usersData as User[]);
@@ -79,7 +104,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
         }
 
         // Fetch events
-        const eventsRes = await fetch(`${API_BASE}/events`);
+        const eventsRes = await fetchWithTimeout(`${API_BASE}/events`);
         if (eventsRes?.ok) {
           const eventsData = await eventsRes.json();
           setEvents(eventsData as Event[]);
@@ -87,7 +112,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
         }
 
         // Fetch questions
-        const questionsRes = await fetch(`${API_BASE}/qa`);
+        const questionsRes = await fetchWithTimeout(`${API_BASE}/qa`);
         if (questionsRes?.ok) {
           const questionsData = await questionsRes.json();
           setQuestions(questionsData as Question[]);
@@ -95,11 +120,35 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
         }
 
         // Fetch startups
-        const startupsRes = await fetch(`${API_BASE}/startups`);
+        const startupsRes = await fetchWithTimeout(`${API_BASE}/startups`);
         if (startupsRes?.ok) {
           const startupsData = await startupsRes.json();
           setStartups(startupsData as Startup[]);
           console.log('✅ Startups:', startupsData.length);
+        }
+
+        // Fetch Internships (Opportunities)
+        const internshipsRes = await fetchWithTimeout(`${API_BASE}/internships`);
+        if (internshipsRes?.ok) {
+          const internData = await internshipsRes.json();
+          setInternships(internData);
+          console.log('✅ Internships:', internData.length);
+        }
+
+        // Fetch Challenges (Coding)
+        const challengesRes = await fetchWithTimeout(`${API_BASE}/challenges`).catch(() => null);
+        if (challengesRes?.ok) {
+          const challengeData = await challengesRes.json();
+          setChallenges(challengeData);
+          console.log('✅ Challenges:', challengeData.length);
+        }
+
+        // Fetch Reverse Pitches (Industry Problems)
+        const reverseRes = await fetchWithTimeout(`${API_BASE}/reverse-pitch`).catch(() => null);
+        if (reverseRes?.ok) {
+          const reverseData = await reverseRes.json();
+          setReversePitches(reverseData);
+          console.log('✅ Reverse Pitches:', reverseData.length);
         }
 
         console.log('✅ All real MongoDB data loaded!');
@@ -291,6 +340,8 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
       questions,
       chatRooms,
       users,
+      internships, // EXPOSED
+      challenges,  // EXPOSED
       addPost,
       addStartup,
       addReversePitch,

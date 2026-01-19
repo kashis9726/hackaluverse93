@@ -19,6 +19,7 @@ const internships_1 = __importDefault(require("./routes/internships"));
 const startups_1 = __importDefault(require("./routes/startups"));
 const challenges_1 = __importDefault(require("./routes/challenges"));
 const qa_1 = __importDefault(require("./routes/qa"));
+const activity_1 = __importDefault(require("./routes/activity"));
 const utils_1 = require("./utils");
 const app = (0, express_1.default)();
 // Middleware
@@ -29,6 +30,7 @@ app.get('/health', (_req, res) => {
     res.json({ ok: true, timestamp: new Date().toISOString() });
 });
 // API Routes
+// API Routes
 app.use('/api/auth', auth_1.default);
 app.use('/api/users', users_1.default);
 app.use('/api/blogs', blogs_1.default);
@@ -37,6 +39,11 @@ app.use('/api/internships', internships_1.default);
 app.use('/api/startups', startups_1.default);
 app.use('/api/challenges', challenges_1.default);
 app.use('/api/qa', qa_1.default);
+app.use('/api/activity', activity_1.default);
+const recommendations_1 = __importDefault(require("./routes/recommendations"));
+const notifications_1 = __importDefault(require("./routes/notifications"));
+app.use('/api/recommendations', recommendations_1.default);
+app.use('/api/notifications', notifications_1.default);
 // 404 handler
 app.use((_req, res) => {
     res.status(404).json({ message: 'Not Found' });
@@ -51,19 +58,19 @@ const start = async () => {
     // Connect to MongoDB - REQUIRED
     const mongoUri = process.env.MONGODB_URI;
     if (!mongoUri) {
-        (0, utils_1.logError)('[DATABASE]', 'MONGODB_URI is not configured - cannot start server');
-        process.exit(1);
+        (0, utils_1.logError)('[DATABASE]', 'MONGODB_URI is not configured - starting server without database connection');
     }
-    try {
-        await mongoose_1.default.connect(mongoUri);
-        (0, utils_1.log)('[DATABASE]', '✓ MongoDB connected');
-        (0, utils_1.log)('[DATABASE]', `Database: ${mongoose_1.default.connection.name}`);
-        (0, utils_1.log)('[DATABASE]', `Host: ${mongoose_1.default.connection.host}`);
-    }
-    catch (err) {
-        (0, utils_1.logError)('[DATABASE]', 'Failed to connect to MongoDB');
-        (0, utils_1.logError)('[DATABASE]', err);
-        process.exit(1);
+    if (mongoUri) {
+        try {
+            await mongoose_1.default.connect(mongoUri);
+            (0, utils_1.log)('[DATABASE]', '✓ MongoDB connected');
+            (0, utils_1.log)('[DATABASE]', `Database: ${mongoose_1.default.connection.name}`);
+            (0, utils_1.log)('[DATABASE]', `Host: ${mongoose_1.default.connection.host}`);
+        }
+        catch (err) {
+            (0, utils_1.logError)('[DATABASE]', 'Failed to connect to MongoDB - starting server anyway');
+            (0, utils_1.logError)('[DATABASE]', err);
+        }
     }
     // Start listening
     app.listen(port, () => {

@@ -15,9 +15,12 @@ const chatRoomSchema = new Schema(
   {
     id: { type: String, default: () => new mongoose.Types.ObjectId().toString(), index: true },
     participants: [{ type: Schema.Types.ObjectId, ref: 'User' }],
-    messages: [embeddedMessageSchema],
+    type: { type: String, default: 'direct' },
+    lastMessageAt: { type: Date, default: Date.now },
+    messages: [embeddedMessageSchema], // Deprecated but kept for legacy
   },
   { timestamps: true }
 );
 
+// DEPRECATED: We now use conversationId directly on Messages
 export default models.ChatRoom || model('ChatRoom', chatRoomSchema);

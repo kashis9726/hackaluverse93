@@ -7,7 +7,6 @@ import type { AuthRequest } from '../middleware/authMiddleware';
 import { requireAuth } from '../middleware/authMiddleware';
 import { AuthService } from '../services/authService';
 import { ERROR_MESSAGES, HTTP_STATUS } from '../constants';
-import { log, logError } from '../utils';
 
 const router = Router();
 
@@ -22,7 +21,7 @@ router.post('/signup', async (req, res) => {
     res.status(HTTP_STATUS.CREATED).json(result);
   } catch (error) {
     const message = error instanceof Error ? error.message : ERROR_MESSAGES.FAILED_AUTH;
-    logError('[AUTH] signup', error);
+    console.error('[AUTH] signup', error);
     res.status(HTTP_STATUS.BAD_REQUEST).json({ message });
   }
 });
@@ -38,7 +37,7 @@ router.post('/login', async (req, res) => {
     res.json(result);
   } catch (error) {
     const message = error instanceof Error ? error.message : ERROR_MESSAGES.FAILED_AUTH;
-    logError('[AUTH] login', error);
+    console.error('[AUTH] login', error);
     res.status(HTTP_STATUS.UNAUTHORIZED).json({ message });
   }
 });
@@ -58,7 +57,7 @@ router.post('/admin-login', async (req, res) => {
     res.json(result);
   } catch (error) {
     const message = error instanceof Error ? error.message : ERROR_MESSAGES.FAILED_AUTH;
-    logError('[AUTH] admin-login', error);
+    console.error('[AUTH] admin-login', error);
     const statusCode = message.includes('not configured') || message.includes('Not allowed')
       ? HTTP_STATUS.FORBIDDEN
       : HTTP_STATUS.UNAUTHORIZED;
@@ -77,7 +76,7 @@ router.get('/me', requireAuth, async (req: AuthRequest, res) => {
     res.json({ user });
   } catch (error) {
     const message = error instanceof Error ? error.message : ERROR_MESSAGES.FAILED_AUTH;
-    logError('[AUTH] me', error);
+    console.error('[AUTH] me', error);
     res.status(HTTP_STATUS.UNAUTHORIZED).json({ message });
   }
 });

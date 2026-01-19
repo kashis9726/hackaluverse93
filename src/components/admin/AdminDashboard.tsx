@@ -1,10 +1,10 @@
 import React, { useMemo } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useApp } from '../../contexts/AppContext';
-import { 
-  Users, 
-  TrendingUp, 
-  Calendar, 
+import {
+  Users,
+  TrendingUp,
+  Calendar,
   Award,
   BarChart3,
   PieChart as PieChartIcon,
@@ -49,7 +49,7 @@ const AdminDashboard: React.FC = () => {
     const deptAlumni = deptUsers.filter(u => u.role === 'alumni').length;
     const availableMentors = deptUsers.filter(u => u.role === 'alumni' && u.isVerified).length;
     const jobsPosted = posts.filter(p => p.type === 'job' && deptUsers.some(u => u.id === p.authorId)).length;
-    
+
     return {
       name: dept,
       students: deptStudents,
@@ -151,12 +151,12 @@ const AdminDashboard: React.FC = () => {
     const hrs = Math.floor(mins / 60);
     if (hrs < 24) return `${hrs} hours ago`;
     const days = Math.floor(hrs / 24);
-    return `${days} day${days>1?'s':''} ago`;
+    return `${days} day${days > 1 ? 's' : ''} ago`;
   };
 
   // Recent Activity feed
   const recentActivity = useMemo(() => {
-    const items: Array<{id:string; type:string; title:string; meta:string; at: Date}> = [];
+    const items: Array<{ id: string; type: string; title: string; meta: string; at: Date }> = [];
     posts.slice(-20).forEach(p => {
       const first = (p.content || '').split('\n')[0];
       if (p.type === 'job') items.push({ id: `post-${p.id}`, type: 'job', title: first, meta: p.author?.name || 'Opportunity', at: new Date(p.createdAt) });
@@ -165,10 +165,10 @@ const AdminDashboard: React.FC = () => {
     events.slice(-20).forEach(e => items.push({ id: `event-${e.id}`, type: 'event', title: e.title, meta: e.location || 'Event', at: new Date(e.date) }));
     startups.slice(-20).forEach(s => items.push({ id: `startup-${s.id}`, type: 'startup', title: s.title, meta: s.tagline || 'Startup', at: new Date(s.createdAt) } as any));
     reversePitches.slice(-20).forEach(rp => items.push({ id: `rp-${rp.id}`, type: 'reverse', title: rp.title, meta: rp.industry || 'Reverse Pitch', at: new Date(rp.createdAt) } as any));
-    questions.slice(-20).forEach(q => items.push({ id: `q-${q.id}`, type: 'question', title: q.title, meta: (q.tags||[]).join(', '), at: new Date(q.createdAt) } as any));
+    questions.slice(-20).forEach(q => items.push({ id: `q-${q.id}`, type: 'question', title: q.title, meta: (q.tags || []).join(', '), at: new Date(q.createdAt) } as any));
     // Recent answers
-    questions.forEach(q => q.answers?.forEach(a => items.push({ id: `ans-${a.id}`, type: 'answer', title: `Answer: ${q.title.slice(0,40)}`, meta: a.author?.name || 'Answer', at: new Date(a.createdAt) })));
-    return items.sort((a,b) => b.at.getTime() - a.at.getTime()).slice(0, 12);
+    questions.forEach(q => q.answers?.forEach(a => items.push({ id: `ans-${a.id}`, type: 'answer', title: `Answer: ${q.title.slice(0, 40)}`, meta: a.author?.name || 'Answer', at: new Date(a.createdAt) })));
+    return items.sort((a, b) => b.at.getTime() - a.at.getTime()).slice(0, 12);
   }, [posts, events, startups, reversePitches, questions]);
 
   return (
@@ -222,18 +222,18 @@ const AdminDashboard: React.FC = () => {
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={monthlyTrend} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                <XAxis 
-                  dataKey="month" 
+                <XAxis
+                  dataKey="month"
                   tick={{ fontSize: 12 }}
                   axisLine={{ stroke: '#e0e0e0' }}
                   tickLine={{ stroke: '#e0e0e0' }}
                 />
-                <YAxis 
+                <YAxis
                   tick={{ fontSize: 12 }}
                   axisLine={{ stroke: '#e0e0e0' }}
                   tickLine={{ stroke: '#e0e0e0' }}
                 />
-                <Tooltip 
+                <Tooltip
                   contentStyle={{
                     backgroundColor: 'white',
                     border: '1px solid #e0e0e0',
@@ -242,21 +242,21 @@ const AdminDashboard: React.FC = () => {
                   }}
                 />
                 <Legend />
-                <Line 
-                  type="monotone" 
-                  dataKey="students" 
-                  stroke="#3B82F6" 
-                  strokeWidth={3} 
-                  dot={{ fill: '#3B82F6', strokeWidth: 2, r: 4 }} 
-                  name="Students" 
+                <Line
+                  type="monotone"
+                  dataKey="students"
+                  stroke="#3B82F6"
+                  strokeWidth={3}
+                  dot={{ fill: '#3B82F6', strokeWidth: 2, r: 4 }}
+                  name="Students"
                 />
-                <Line 
-                  type="monotone" 
-                  dataKey="alumni" 
-                  stroke="#10B981" 
-                  strokeWidth={3} 
-                  dot={{ fill: '#10B981', strokeWidth: 2, r: 4 }} 
-                  name="Alumni" 
+                <Line
+                  type="monotone"
+                  dataKey="alumni"
+                  stroke="#10B981"
+                  strokeWidth={3}
+                  dot={{ fill: '#10B981', strokeWidth: 2, r: 4 }}
+                  name="Alumni"
                 />
               </LineChart>
             </ResponsiveContainer>
@@ -273,19 +273,19 @@ const AdminDashboard: React.FC = () => {
             <ResponsiveContainer width="100%" height="100%">
               <RCBarChart data={eventsHostedData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                <XAxis 
-                  dataKey="name" 
+                <XAxis
+                  dataKey="name"
                   tick={{ fontSize: 11 }}
                   axisLine={{ stroke: '#e0e0e0' }}
                   tickLine={{ stroke: '#e0e0e0' }}
                 />
-                <YAxis 
-                  allowDecimals={false} 
+                <YAxis
+                  allowDecimals={false}
                   tick={{ fontSize: 12 }}
                   axisLine={{ stroke: '#e0e0e0' }}
                   tickLine={{ stroke: '#e0e0e0' }}
                 />
-                <Tooltip 
+                <Tooltip
                   contentStyle={{
                     backgroundColor: 'white',
                     border: '1px solid #e0e0e0',
@@ -293,8 +293,8 @@ const AdminDashboard: React.FC = () => {
                     boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
                   }}
                 />
-                <Bar 
-                  dataKey="count" 
+                <Bar
+                  dataKey="count"
                   radius={[6, 6, 0, 0]}
                   fill="#6366F1"
                 />
@@ -312,47 +312,47 @@ const AdminDashboard: React.FC = () => {
             <div className="text-xl font-bold text-gray-900">{jobsCount}</div>
           </div>
           <div className="p-2 bg-emerald-100 text-emerald-700 rounded-lg">
-            <Briefcase className="h-5 w-5"/>
+            <Briefcase className="h-5 w-5" />
           </div>
         </div>
-        
+
         <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-200 flex items-center justify-between">
           <div>
             <div className="text-xs text-gray-500 font-medium">Blog Posts</div>
             <div className="text-xl font-bold text-gray-900">{blogsCount}</div>
           </div>
           <div className="p-2 bg-blue-100 text-blue-700 rounded-lg">
-            <BookOpen className="h-5 w-5"/>
+            <BookOpen className="h-5 w-5" />
           </div>
         </div>
-        
+
         <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-200 flex items-center justify-between">
           <div>
             <div className="text-xs text-gray-500 font-medium">Questions</div>
             <div className="text-xl font-bold text-gray-900">{questionsCount}</div>
           </div>
           <div className="p-2 bg-orange-100 text-orange-700 rounded-lg">
-            <MessageCircle className="h-5 w-5"/>
+            <MessageCircle className="h-5 w-5" />
           </div>
         </div>
-        
+
         <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-200 flex items-center justify-between">
           <div>
             <div className="text-xs text-gray-500 font-medium">Reverse Pitches</div>
             <div className="text-xl font-bold text-gray-900">{reverseCount}</div>
           </div>
           <div className="p-2 bg-purple-100 text-purple-700 rounded-lg">
-            <Rocket className="h-5 w-5"/>
+            <Rocket className="h-5 w-5" />
           </div>
         </div>
-        
+
         <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-200 flex items-center justify-between">
           <div>
             <div className="text-xs text-gray-500 font-medium">This Week</div>
             <div className="text-xl font-bold text-gray-900">{postsThisWeek}</div>
           </div>
           <div className="p-2 bg-indigo-100 text-indigo-700 rounded-lg">
-            <Activity className="h-5 w-5"/>
+            <Activity className="h-5 w-5" />
           </div>
         </div>
       </div>
@@ -363,7 +363,7 @@ const AdminDashboard: React.FC = () => {
           <PieChartIcon className="h-5 w-5 mr-2 text-indigo-600" />
           Department Overview
         </h2>
-        
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Department Stats Table */}
           <div className="overflow-x-auto">
@@ -434,14 +434,13 @@ const AdminDashboard: React.FC = () => {
             recentActivity.map(item => (
               <div key={item.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                 <div className="flex items-center space-x-3">
-                  <div className={`p-2 rounded-lg ${
-                    item.type === 'job' ? 'bg-emerald-100 text-emerald-700' :
-                    item.type === 'blog' ? 'bg-blue-100 text-blue-700' :
-                    item.type === 'event' ? 'bg-purple-100 text-purple-700' :
-                    item.type === 'question' ? 'bg-orange-100 text-orange-700' :
-                    item.type === 'startup' ? 'bg-red-100 text-red-700' :
-                    'bg-gray-100 text-gray-700'
-                  }`}>
+                  <div className={`p-2 rounded-lg ${item.type === 'job' ? 'bg-emerald-100 text-emerald-700' :
+                      item.type === 'blog' ? 'bg-blue-100 text-blue-700' :
+                        item.type === 'event' ? 'bg-purple-100 text-purple-700' :
+                          item.type === 'question' ? 'bg-orange-100 text-orange-700' :
+                            item.type === 'startup' ? 'bg-red-100 text-red-700' :
+                              'bg-gray-100 text-gray-700'
+                    }`}>
                     {item.type === 'job' && <Briefcase className="h-4 w-4" />}
                     {item.type === 'blog' && <BookOpen className="h-4 w-4" />}
                     {item.type === 'event' && <Calendar className="h-4 w-4" />}
@@ -476,17 +475,18 @@ const AdminDashboard: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {topContributors.slice(0, 8).map((contributor, idx) => (
             <div key={contributor.id} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-              <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
-                idx === 0 ? 'bg-yellow-500 text-white' :
-                idx === 1 ? 'bg-gray-400 text-white' :
-                idx === 2 ? 'bg-amber-600 text-white' :
-                'bg-blue-100 text-blue-700'
-              }`}>
+              <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${idx === 0 ? 'bg-yellow-500 text-white' :
+                  idx === 1 ? 'bg-gray-400 text-white' :
+                    idx === 2 ? 'bg-amber-600 text-white' :
+                      'bg-blue-100 text-blue-700'
+                }`}>
                 {idx + 1}
               </div>
               <div className="flex-1 min-w-0">
                 <p className="font-medium text-gray-900 truncate">{contributor.name}</p>
-                <p className="text-sm text-gray-500 capitalize">{contributor.role}</p>
+                <p className="text-xs text-gray-500 truncate">
+                  {contributor.company ? `${contributor.position || 'Alumni'} at ${contributor.company}` : <span className="capitalize">{contributor.role}</span>}
+                </p>
               </div>
               <div className="flex-shrink-0">
                 <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">

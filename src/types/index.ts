@@ -139,3 +139,40 @@ export interface Message {
   timestamp: Date;
   type: 'text' | 'file';
 }
+
+export interface Internship {
+  id: string;
+  postedById: string;
+  postedBy?: User; // hydrated
+  title: string;
+  company: string;
+  stipend?: string;
+  type: 'Job' | 'Internship' | 'Freelance' | 'Part-time' | 'Remote-Friendly' | 'Hybrid';
+  location: string;
+  skills: string[];
+  description: string;
+  applicants: string[];
+  createdAt: Date;
+}
+
+export interface Challenge {
+  id: string;
+  authorId: string;
+  author?: User; // hydrated
+  title: string;
+  description: string;
+  prize?: string;
+  deadline?: Date;
+  submissions: Submission[];
+  createdAt: Date;
+}
+
+export interface Notification {
+  _id: string; // Mongoose ID
+  userId: string;
+  type: 'post' | 'internship' | 'connection' | 'system';
+  referenceId: string;
+  message: string;
+  isRead: boolean;
+  createdAt: string; // Serialized date from API
+}

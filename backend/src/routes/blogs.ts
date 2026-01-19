@@ -54,6 +54,14 @@ router.post('/', requireAuth, requireProfileCompleted, requireRole(['alumni', 'a
     visibility: 'public'
   });
 
+  // TRIGGER NOTIFICATION
+  // We don't await this so it runs in background (or we can await if critical)
+  // For better reliability we could await or use a queue. Here we await to ensure it runs but don't block response too much logic inside.
+  // Actually, let's catch errors so it doesn't fail request.
+  import('../services/notificationService').then(service => {
+    service.createPostNotification(blog).catch(err => console.error('Notification trigger failed', err));
+  });
+
   const populated = await Blog.findById(blog._id).populate('authorId');
   return res.status(201).json(populated || blog);
 });
