@@ -33,7 +33,16 @@ const httpServer = createServer(app);
 const io = initSocket(httpServer);
 
 // Middleware
-app.use(cors());
+app.use(
+  cors({
+    origin: [
+      'https://hackaluverse93.vercel.app',
+      'http://localhost:5173'
+    ],
+    credentials: true
+  })
+);
+
 app.use(express.json());
 
 // Health check
