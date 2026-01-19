@@ -29,7 +29,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const API_BASE = 'https://backend99-eoqn.onrender.com/api';
 
 
-  const REQUEST_TIMEOUT_MS = 10000;
+  const REQUEST_TIMEOUT_MS = 30000;
 
   const normalizeUser = (u: User): User => {
     return {
